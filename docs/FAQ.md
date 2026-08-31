@@ -2,7 +2,7 @@
 
 ## Is RoamPrompt available in Roam Depot?
 
-Not yet. It is currently undergoing private release-candidate testing.
+Not yet. Version 0.4.0-rc.3 is the approved public release candidate, and its Roam Depot submission is being prepared.
 
 ## Does RoamPrompt upload my entire graph?
 
