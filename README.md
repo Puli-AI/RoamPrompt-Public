@@ -1,5 +1,7 @@
 # RoamPrompt
 
+**Website:** [roamprompt.puli-consulting.com](https://roamprompt.puli-consulting.com)
+
 **Turn notes, images, and academic papers into structured, connected knowledge inside Roam Research.**
 
 RoamPrompt is an AI-assisted extension for people who use Roam Research for scholarly work, professional learning, writing, and knowledge development.
