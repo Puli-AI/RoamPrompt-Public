@@ -2,7 +2,7 @@
 
 All notable public changes to RoamPrompt are recorded here.
 
-## 0.4.0-rc.3 - 2026-08-31
+## 0.4.0 - 2026-08-31
 
 ### Added
 
@@ -27,4 +27,4 @@ All notable public changes to RoamPrompt are recorded here.
 
 ### Status
 
-Approved public release candidate. Roam Depot submission is pending.
+Stable public release approved for Roam Depot submission.
