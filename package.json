@@ -1,0 +1,18 @@
+{
+  "name": "roamprompt",
+  "version": "0.4.0-rc.3",
+  "description": "AI-assisted smart notes and source-grounded document ingestion for Roam Research",
+  "type": "module",
+  "main": "extension.js",
+  "scripts": {
+    "check": "node --check extension.js"
+  },
+  "keywords": [
+    "roam-research",
+    "zettelkasten",
+    "gemini",
+    "knowledge-management"
+  ],
+  "author": "Puli AI",
+  "private": true
+}
