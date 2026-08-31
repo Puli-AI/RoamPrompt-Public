@@ -4,7 +4,7 @@
 
 **Turn notes, images, and academic papers into structured, connected knowledge inside Roam Research.**
 
-RoamPrompt is an AI-assisted extension for people who use Roam Research for scholarly work, professional learning, writing, and knowledge development.
+RoamPrompt is an AI-assisted extension from Puli Consulting for people who use Roam Research for scholarly work, professional learning, writing, and knowledge development.
 
 It helps transform source material into:
 
@@ -71,16 +71,20 @@ The release requires:
 
 Roam Depot installation instructions will be finalised when the listing is approved.
 
-## Support and feedback
+## Support, feedback, and collaboration
 
-Once public testing begins, use [GitHub Issues](https://github.com/Puli-AI/RoamPrompt-Public/issues) for reproducible bugs and feature requests. Do not include API keys, private notes, confidential documents, or sensitive graph content in an issue.
+Use [GitHub Issues](https://github.com/Puli-AI/RoamPrompt-Public/issues) for reproducible bugs and feature requests. Do not include API keys, private notes, confidential documents, or sensitive graph content in an issue.
 
-## About Puli AI
+We welcome conversations with Roam practitioners, researchers, educators, extension developers, and institutional partners interested in promoting RoamPrompt or co-developing responsible, source-grounded knowledge workflows.
 
-RoamPrompt is developed by Puli AI as part of its work on human-centred AI, knowledge infrastructure, and augmented professional reasoning.
+Contact **Dr. M.K. Mak**, Managing Partner, Puli Consulting International Co., Ltd., at [m.k.mak@puli-consulting.com](mailto:m.k.mak@puli-consulting.com).
+
+## About Puli Consulting
+
+RoamPrompt is developed by [Puli Consulting International Co., Ltd.](https://www.puli-consulting.com) as part of its work on human-centred AI, knowledge infrastructure, and augmented professional reasoning.
 
 ## Licence
 
 RoamPrompt is released under the [MIT License](LICENSE).
 
-Copyright © 2026 Puli AI. The licence permits use, copying, modification, and redistribution subject to preservation of the copyright and licence notice. The Puli AI name and branding are not licensed as trademarks.
+The licence permits use, copying, modification, and redistribution subject to preservation of the copyright and licence notice. Company names, logos, and branding are not licensed as trademarks.
