@@ -46,7 +46,10 @@ Candidates are evaluated for:
 - source grounding;
 - future usefulness;
 - non-duplication; and
-- honest treatment of uncertainty.
+- honest treatment of uncertainty; and
+- alignment between the card title, claim, and cited evidence.
+
+Atomicity means one coherent, reusable proposition. A card may combine closely interdependent observations when their conjunction carries a distinct meaning, but it should not bundle unrelated findings merely because they came from the same source.
 
 Candidates may be accepted or rejected before graph insertion.
 

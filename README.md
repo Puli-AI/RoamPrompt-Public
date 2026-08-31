@@ -45,9 +45,9 @@ Organise recent tasks and captured quotations into a structured reflection.
 
 ## Release status
 
-RoamPrompt is currently in private release-candidate testing. It is **not yet available in Roam Depot**.
+RoamPrompt v0.4.0-rc.3 is the approved public release candidate. Its reviewed, self-contained distribution file is available in this repository.
 
-This repository will contain the public release bundle, user documentation, privacy information, changelog, and support materials. Internal development history and experimental materials are maintained separately.
+RoamPrompt is **not yet listed in Roam Depot**. General users should wait for the Depot release; technically experienced testers may review the source bundle and documentation here. Internal development history and experimental materials remain separate.
 
 ## Documentation
 
@@ -60,14 +60,14 @@ This repository will contain the public release bundle, user documentation, priv
 
 ## Requirements
 
-The public release is expected to require:
+The release requires:
 
 - a Roam Research graph;
 - a supported web browser;
 - a user-provided Google Gemini API key; and
 - acceptance of the applicable Google API terms and costs.
 
-Final installation instructions will be published when the release is approved for Roam Depot.
+Roam Depot installation instructions will be finalised when the listing is approved.
 
 ## Support and feedback
 
