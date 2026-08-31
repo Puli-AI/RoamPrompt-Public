@@ -495,7 +495,7 @@ export default {
         {
           id: "gemini-api-key",
           name: "Gemini API Key",
-          description: "Paste your own Gemini API key here. It is sent directly to Google, never to Puli AI.",
+          description: "Paste your own Gemini API key here. It is sent directly to Google, never to Puli Consulting.",
           action: { type: "input", placeholder: "AIzaSy..." }
         },
         {
