@@ -14,5 +14,6 @@
     "knowledge-management"
   ],
   "author": "Puli AI",
-  "private": true
+  "private": true,
+  "license": "MIT"
 }
