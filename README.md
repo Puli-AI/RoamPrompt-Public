@@ -76,3 +76,9 @@ Once public testing begins, use [GitHub Issues](https://github.com/Puli-AI/RoamP
 ## About Puli AI
 
 RoamPrompt is developed by Puli AI as part of its work on human-centred AI, knowledge infrastructure, and augmented professional reasoning.
+
+## Licence
+
+RoamPrompt is released under the [MIT License](LICENSE).
+
+Copyright © 2026 Puli AI. The licence permits use, copying, modification, and redistribution subject to preservation of the copyright and licence notice. The Puli AI name and branding are not licensed as trademarks.
