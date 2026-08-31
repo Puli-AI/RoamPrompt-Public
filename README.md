@@ -47,7 +47,7 @@ Organise recent tasks and captured quotations into a structured reflection.
 
 ## Release status
 
-RoamPrompt v0.4.0-rc.3 is the approved public release candidate. Its reviewed, self-contained distribution file is available in this repository.
+RoamPrompt v0.4.0 is the approved stable public release. Its reviewed, self-contained distribution file is available in this repository.
 
 RoamPrompt is **not yet listed in Roam Depot**. General users should wait for the Depot release; technically experienced testers may review the source bundle and documentation here. Internal development history and experimental materials remain separate.
 
