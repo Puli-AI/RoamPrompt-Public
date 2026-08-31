@@ -1,6 +1,6 @@
 # Getting Started
 
-RoamPrompt is currently in private release-candidate testing. These instructions describe the expected public workflow and will be finalised before Roam Depot launch.
+RoamPrompt v0.4.0-rc.3 is the approved public release candidate. The Roam Depot listing is pending; the steps below describe the supported workflow once installation is available.
 
 ## Before installation
 
@@ -13,9 +13,9 @@ You will need:
 
 Read the [Privacy Guide](PRIVACY.md) before using the extension with personal, confidential, regulated, or unpublished material.
 
-## Expected installation
+## Roam Depot installation
 
-When RoamPrompt becomes available:
+When the Roam Depot listing is approved:
 
 1. Open **Settings** in Roam Research.
 2. Select **Roam Depot**.
