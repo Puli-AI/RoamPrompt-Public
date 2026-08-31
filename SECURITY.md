@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-RoamPrompt has not yet issued a public production release. Security support will begin with the first Roam Depot release.
+RoamPrompt v0.4.0-rc.3 is the currently supported public release candidate. General availability will begin with the first Roam Depot release.
 
 ## Reporting a vulnerability
 
