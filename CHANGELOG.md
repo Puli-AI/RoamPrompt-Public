@@ -2,6 +2,17 @@
 
 All notable public changes to RoamPrompt are recorded here.
 
+## 0.4.1 - 2026-09-03
+
+### Fixed
+
+- Preserve quotations, idioms, proverbs, maxims, aphorisms, classical phrases, and citations in their original input language and script.
+- Place opposite-language translations and Traditional or Simplified variants under aliases.
+- Route standalone wisdom fragments through the quote schema even when quotation marks or a `Quote::` label are absent.
+- Mark recalled but user-unsupplied provenance as candidate or unverified.
+- Label interpretive takeaways explicitly and avoid unsupported doctrinal or cultural claims.
+- Apply Chinese book-title marks only to Chinese work titles and prevent nested Roam page links.
+
 ## 0.4.0 - 2026-08-31
 
 ### Added

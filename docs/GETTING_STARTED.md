@@ -1,6 +1,6 @@
 # Getting Started
 
-RoamPrompt v0.4.0-rc.3 is the approved public release candidate. The Roam Depot listing is pending; the steps below describe the supported workflow once installation is available.
+RoamPrompt v0.4.1 is the approved stable public release. The Roam Depot listing is pending; the steps below describe the supported workflow once installation is available.
 
 ## Before installation
 
