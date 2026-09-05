@@ -2,6 +2,14 @@
 
 All notable public changes to RoamPrompt are recorded here.
 
+## 0.4.2 - 2026-09-05
+
+### Fixed
+
+- Apply the three-citation verification threshold only to academic papers.
+- Allow books, book chapters, reports, and other supported PDFs to proceed with fewer bibliography entries when their extracted claims still have valid evidence locators.
+- Preserve all existing claim, citation, epistemic-status, permanent-note review, and transactional insertion safeguards.
+
 ## 0.4.1 - 2026-09-03
 
 ### Fixed

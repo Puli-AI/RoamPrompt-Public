@@ -160,7 +160,11 @@ function validateExtraction(extraction) {
   requireValue(Number.isInteger(extraction.paper.publication_year), "Publication year must be an integer.", errors);
   requireValue(Boolean(extraction.paper.study_period), "Study period must be recorded separately.", errors);
   requireValue(Array.isArray(extraction.claims) && extraction.claims.length > 0, "No source claims were extracted.", errors);
-  requireValue(Array.isArray(extraction.key_citations) && extraction.key_citations.length >= 3, "Fewer than three verified citations were extracted.", errors);
+  const citations = Array.isArray(extraction.key_citations) ? extraction.key_citations : [];
+  requireValue(Array.isArray(extraction.key_citations), "Key citations must be an array.", errors);
+  if (extraction.paper.document_type === "academic_paper") {
+    requireValue(citations.length >= 3, "Fewer than three verified citations were extracted for an academic paper.", errors);
+  }
 
   const claimIds = new Set();
   for (const claim of extraction.claims || []) {
