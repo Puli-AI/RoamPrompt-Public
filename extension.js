@@ -8,6 +8,7 @@ const EPISTEMIC_STATUSES = [
 const DOCUMENT_TYPES = [
   "academic_paper",
   "report",
+  "book",
   "book_chapter",
   "other_document"
 ];
@@ -120,7 +121,8 @@ const ZETTEL_PIPELINE_SCHEMA = {
 
 const SOURCE_SYSTEM_INSTRUCTION = `
 You are the source-extraction stage of a scholarly knowledge pipeline.
-Classify the document as academic_paper, report, book_chapter, or other_document.
+Classify the document as academic_paper, report, book, book_chapter, or other_document.
+Use book for a complete monograph. Use book_chapter only when the attached source is a single chapter or an excerpt from a larger book.
 Extract only information explicitly supported by the attached document.
 Publication year and study period are different fields and must never be conflated.
 Every claim needs a traceable locator such as a section plus printed page, figure, table, or bibliography reference number.
@@ -1006,7 +1008,7 @@ function createChatModal(apiKey, targetUid, extensionAPI) {
   const documentRow = document.createElement("div");
   Object.assign(documentRow.style, { border: "1px dashed #9aa7b2", borderRadius: "6px", padding: "12px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f7f9fa" });
   const documentLabel = document.createElement("span");
-  documentLabel.innerText = "Drop one academic PDF here, or";
+  documentLabel.innerText = "Drop one supported PDF here, or";
   const attachBtn = document.createElement("button");
   attachBtn.type = "button";
   attachBtn.innerText = "Attach PDF";
