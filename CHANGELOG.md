@@ -2,6 +2,15 @@
 
 All notable public changes to RoamPrompt are recorded here.
 
+## 0.4.3 - 2026-09-05
+
+### Fixed
+
+- Classify complete monographs as `book` instead of `other_document`.
+- Reserve `book_chapter` for individual chapters and excerpts from larger books.
+- Describe the attachment control as accepting a supported PDF rather than only an academic PDF.
+- Retain the academic-paper-only three-citation threshold and all existing provenance safeguards.
+
 ## 0.4.2 - 2026-09-05
 
 ### Fixed
