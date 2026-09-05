@@ -1,6 +1,6 @@
 {
   "name": "roamprompt",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "AI-assisted smart notes and source-grounded document ingestion for Roam Research",
   "type": "module",
   "main": "extension.js",
