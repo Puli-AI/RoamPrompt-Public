@@ -2,7 +2,7 @@
 
 **Website:** [roamprompt.puli-consulting.com](https://roamprompt.puli-consulting.com)
 
-**Turn notes, images, and academic papers into structured, connected knowledge inside Roam Research.**
+**Turn notes, images, and supported PDFs into structured, connected knowledge inside Roam Research.**
 
 RoamPrompt is an AI-assisted extension from Puli Consulting for people who use Roam Research for scholarly work, professional learning, writing, and knowledge development.
 
@@ -18,7 +18,7 @@ It helps transform source material into:
 
 RoamPrompt is designed around a simple principle: AI should accelerate knowledge work without silently deciding what becomes knowledge.
 
-For academic papers, RoamPrompt separates:
+For source-grounded PDFs, RoamPrompt separates:
 
 1. what the source reports;
 2. what the authors interpret;
@@ -37,7 +37,7 @@ Convert a focused Roam block into a structured note with useful metadata and pag
 
 Enter notes or paste an image in a lightweight window without leaving the current Roam page.
 
-### Academic-paper workflow
+### PDF document workflow
 
 Attach a supported PDF to produce a source-grounded literature note and reviewable permanent-note candidates.
 
@@ -47,7 +47,7 @@ Organise recent tasks and captured quotations into a structured reflection.
 
 ## Release status
 
-RoamPrompt v0.4.1 is the approved stable public release. Its reviewed, self-contained distribution file is available in this repository.
+RoamPrompt v0.4.2 is the approved stable public release. Its reviewed, self-contained distribution file is available in this repository.
 
 RoamPrompt is **not yet listed in Roam Depot**. General users should wait for the Depot release; technically experienced testers may review the source bundle and documentation here. Internal development history and experimental materials remain separate.
 
