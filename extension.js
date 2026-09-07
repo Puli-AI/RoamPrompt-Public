@@ -1,6 +1,9 @@
 const EPISTEMIC_STATUSES = [
   "empirical_finding",
   "author_interpretation",
+  "reported_event",
+  "attributed_statement",
+  "contemporary_prediction",
   "reader_synthesis",
   "speculative_hypothesis"
 ];
@@ -10,7 +13,19 @@ const DOCUMENT_TYPES = [
   "report",
   "book",
   "book_chapter",
+  "news_article",
+  "news_clipping",
   "other_document"
+];
+
+const NEWS_DOCUMENT_TYPES = ["news_article", "news_clipping"];
+
+const SOURCE_CLAIM_STATUSES = [
+  "empirical_finding",
+  "author_interpretation",
+  "reported_event",
+  "attributed_statement",
+  "contemporary_prediction"
 ];
 
 const stringArray = { type: "array", items: { type: "string" } };
@@ -30,9 +45,18 @@ const SOURCE_EXTRACTION_SCHEMA = {
         research_question: { type: "string" },
         method: { type: "string" },
         conclusion: { type: "string" },
-        limitations: stringArray
+        limitations: stringArray,
+        capture_mode: { type: "string", enum: ["text_pdf", "image_only_scan", "screenshot", "mixed"] },
+        publication_name: { type: "string" },
+        publication_date: { type: "string" },
+        dateline: { type: "string" },
+        byline: { type: "string" },
+        wire_service: { type: "string" },
+        target_region: { type: "string" },
+        selection_confidence: { type: "string", enum: ["high", "medium", "low"] },
+        competing_headlines: stringArray
       },
-      required: ["title", "document_type", "authors", "publication_year", "study_period", "source_file", "research_question", "method", "conclusion", "limitations"]
+      required: ["title", "document_type", "authors", "publication_year", "study_period", "source_file", "research_question", "method", "conclusion", "limitations", "capture_mode", "publication_name", "publication_date", "dateline", "byline", "wire_service", "target_region", "selection_confidence", "competing_headlines"]
     },
     claims: {
       type: "array",
@@ -41,7 +65,7 @@ const SOURCE_EXTRACTION_SCHEMA = {
         properties: {
           id: { type: "string" },
           statement: { type: "string" },
-          epistemic_status: { type: "string", enum: ["empirical_finding", "author_interpretation"] },
+          epistemic_status: { type: "string", enum: SOURCE_CLAIM_STATUSES },
           locator: { type: "string" },
           evidence: { type: "string" },
           quantities: stringArray
@@ -120,14 +144,22 @@ const ZETTEL_PIPELINE_SCHEMA = {
 };
 
 const SOURCE_SYSTEM_INSTRUCTION = `
-You are the source-extraction stage of a scholarly knowledge pipeline.
-Classify the document as academic_paper, report, book, book_chapter, or other_document.
+You are the visual source-intake and extraction stage of a provenance-preserving knowledge pipeline.
+Classify the document as academic_paper, report, book, book_chapter, news_article, news_clipping, or other_document.
 Use book for a complete monograph. Use book_chapter only when the attached source is a single chapter or an excerpt from a larger book.
+Use news_article for a text-native news article. Use news_clipping for a scanned, photographed, screenshot, or image-only newspaper or magazine clipping.
+Visually inspect every PDF page. A PDF may contain no text layer; read legible text from the rendered page image rather than treating it as empty.
+For screenshots and multi-column pages, identify the target article from the user's focus, filename, headline prominence, and column boundaries. Exclude browser controls, advertisements, captions belonging to other items, and neighbouring articles.
+Record the target column or page region and list other plausible headlines under competing_headlines. Use low selection_confidence when the intended article remains ambiguous; never merge text from competing articles.
 Extract only information explicitly supported by the attached document.
 Publication year and study period are different fields and must never be conflated.
 Every claim needs a traceable locator such as a section plus printed page, figure, table, or bibliography reference number.
 Use the document's printed page number when visible; otherwise use the PDF page number.
-Classify only empirical findings and author interpretations at this stage.
+For news sources, use reported_event for events described by the article, attributed_statement for claims or quotations attributed to a named person or organisation, and contemporary_prediction for forecasts made at the time. Do not convert a prediction into an established fact.
+For academic and general documents, classify source claims as empirical_finding or author_interpretation.
+For news sources, populate publication_name, publication_date, dateline, byline, and wire_service only from visible evidence. Use "Not stated" rather than guessing. An agency credit such as UPI is a wire_service, not a personal author.
+For news sources, use "Not applicable" for the string fields study_period, research_question, method, and conclusion when the article does not state scholarly equivalents; use an empty limitations array.
+For non-news sources, still populate capture_mode and target_region. Use "Not applicable" for news-only string fields that are not visible, high selection_confidence when the source boundary is clear, and an empty competing_headlines array when there is no ambiguity.
 Copy citation author/year/title from the paper's bibliography; never reconstruct from memory.
 Preserve numerical values and whether an effect is absolute or relative.
 Return only JSON matching the supplied schema.
@@ -139,10 +171,11 @@ A literature note represents the source. A permanent note represents one reusabl
 Do not promote a candidate merely because it is interesting or well written.
 Evaluate every candidate against all eight gates: atomic, standalone, own words, source grounded, generative, non-duplicate, uncertainty honest, and title-claim aligned.
 The title must accurately compress the candidate claim and must not introduce a finding, comparison, causal relation, or qualifier absent from the claim and its cited evidence.
-Empirical findings, author interpretations, reader syntheses, and speculative hypotheses must remain visibly distinct.
+Empirical findings, author interpretations, reported events, attributed statements, contemporary predictions, reader syntheses, and speculative hypotheses must remain visibly distinct.
 Copy every supporting source locator verbatim into evidence_anchor and include its claim ID.
 A candidate labelled empirical_finding must cite only empirical source claims.
 A candidate labelled author_interpretation must cite at least one author_interpretation source claim.
+A candidate labelled reported_event, attributed_statement, or contemporary_prediction must cite at least one source claim with the same status.
 Existing connections may only use titles supplied from the user's Roam graph.
 Put other worthwhile concepts in suggested_new_concepts, never existing_connections.
 Speculation must not use empirical language.
@@ -155,12 +188,28 @@ function requireValue(condition, message, errors) {
 
 function validateExtraction(extraction) {
   const errors = [];
-  requireValue(extraction && extraction.paper, "Missing paper metadata.", errors);
+  requireValue(extraction && extraction.paper, "Missing source metadata.", errors);
   if (!extraction?.paper) return { valid: false, errors };
 
   requireValue(DOCUMENT_TYPES.includes(extraction.paper.document_type), "Document type is invalid.", errors);
   requireValue(Number.isInteger(extraction.paper.publication_year), "Publication year must be an integer.", errors);
-  requireValue(Boolean(extraction.paper.study_period), "Study period must be recorded separately.", errors);
+  const isNews = NEWS_DOCUMENT_TYPES.includes(extraction.paper.document_type);
+  if (isNews) {
+    requireValue(Boolean(extraction.paper.publication_name), "News source lacks a publication name.", errors);
+    requireValue(Boolean(extraction.paper.publication_date), "News source lacks a publication date.", errors);
+    requireValue(Boolean(extraction.paper.target_region), "News source lacks an article-region locator.", errors);
+    requireValue(["text_pdf", "image_only_scan", "screenshot", "mixed"].includes(extraction.paper.capture_mode), "News source capture mode is invalid.", errors);
+    requireValue(["high", "medium", "low"].includes(extraction.paper.selection_confidence), "News source selection confidence is invalid.", errors);
+    requireValue(Array.isArray(extraction.paper.competing_headlines), "News source competing headlines must be an array.", errors);
+    if (extraction.paper.selection_confidence === "low") {
+      const alternatives = extraction.paper.competing_headlines?.length
+        ? `: ${extraction.paper.competing_headlines.join("; ")}`
+        : "";
+      errors.push(`The target article is ambiguous${alternatives}. Add the target headline or subject to Research focus and retry.`);
+    }
+  } else {
+    requireValue(Boolean(extraction.paper.study_period), "Study period must be recorded separately.", errors);
+  }
   requireValue(Array.isArray(extraction.claims) && extraction.claims.length > 0, "No source claims were extracted.", errors);
   const citations = Array.isArray(extraction.key_citations) ? extraction.key_citations : [];
   requireValue(Array.isArray(extraction.key_citations), "Key citations must be an array.", errors);
@@ -172,7 +221,7 @@ function validateExtraction(extraction) {
   for (const claim of extraction.claims || []) {
     requireValue(Boolean(claim.id) && !claimIds.has(claim.id), "Claim IDs must be unique.", errors);
     claimIds.add(claim.id);
-    requireValue(EPISTEMIC_STATUSES.slice(0, 2).includes(claim.epistemic_status), `Invalid source status for ${claim.id}.`, errors);
+    requireValue(SOURCE_CLAIM_STATUSES.includes(claim.epistemic_status), `Invalid source status for ${claim.id}.`, errors);
     requireValue(Boolean(claim.locator), `Claim ${claim.id} lacks a source locator.`, errors);
     requireValue(Boolean(claim.evidence), `Claim ${claim.id} lacks evidence.`, errors);
   }
@@ -212,6 +261,10 @@ function evaluateCandidates(pipeline, extraction, existingGraphTitles = []) {
     if (candidate.epistemic_status === "author_interpretation" && !citedClaims.some(claim => claim.epistemic_status === "author_interpretation")) {
       reasons.push("Author-interpretation candidate lacks a matching source interpretation.");
     }
+    if (["reported_event", "attributed_statement", "contemporary_prediction"].includes(candidate.epistemic_status)
+      && !citedClaims.some(claim => claim.epistemic_status === candidate.epistemic_status)) {
+      reasons.push(`${candidate.epistemic_status} candidate lacks a matching source claim.`);
+    }
     if (seenTitles.has(candidate.title)) reasons.push("Duplicate candidate title.");
     seenTitles.add(candidate.title);
     if ((candidate.existing_connections || []).some(title => !graphTitles.has(title))) reasons.push("Claims a graph connection that was not retrieved.");
@@ -235,15 +288,37 @@ const authorSurname = value => {
 };
 const citationKey = paper => `@${authorSurname(paper.authors?.[0])}${paper.publication_year}: ${paper.title}`;
 const bibliographyKey = item => `@${authorSurname(item.authors)}${item.year}: ${item.title}`;
+const sourceKey = source => NEWS_DOCUMENT_TYPES.includes(source.document_type)
+  ? `${source.publication_name || source.wire_service || "News source"} ${source.publication_date || source.publication_year}: ${source.title}`
+  : citationKey(source);
 
 function renderVerifiedNotes(extraction, pipeline, approvedCandidateIds) {
   const paper = extraction.paper;
-  const sourceKey = citationKey(paper);
+  const sourcePageKey = sourceKey(paper);
   const approved = new Set(approvedCandidateIds);
   const roots = [];
 
-  const literature = {
-    text: `📝 QEC Reading Note: ${link(sourceKey)}`,
+  const newsSource = NEWS_DOCUMENT_TYPES.includes(paper.document_type);
+  const literature = newsSource ? {
+    text: `📰 News Source Note: ${link(sourcePageKey)}`,
+    children: [
+      `Source File:: ${link(paper.source_file)}`,
+      `Publication:: ${paper.publication_name}`,
+      `Publication Date:: ${paper.publication_date}`,
+      `Byline:: ${paper.byline}`,
+      `Wire Service:: ${paper.wire_service}`,
+      `Dateline:: ${paper.dateline}`,
+      `Document Type:: ${paper.document_type}`,
+      `Capture Mode:: ${paper.capture_mode}`,
+      `Article Region:: ${paper.target_region}`,
+      `Tags:: #SourceNotes #NewsClippings ${pipeline.literature_note.topics.map(link).join(" ")}`,
+      `Aliases:: ${pipeline.literature_note.aliases.map(link).join(", ")}`,
+      { text: "Reported Claims::", children: extraction.claims.map(claim => `[${claim.epistemic_status}] ${claim.statement} — ${claim.locator}`) },
+      `Synthesis:: ${pipeline.literature_note.synthesis}`,
+      { text: "Open Questions::", children: pipeline.literature_note.open_questions }
+    ]
+  } : {
+    text: `📝 QEC Reading Note: ${link(sourcePageKey)}`,
     children: [
       `Source File:: ${link(paper.source_file)}`,
       `Authors:: ${paper.authors.map(link).join(", ")}`,
@@ -276,7 +351,7 @@ function renderVerifiedNotes(extraction, pipeline, approvedCandidateIds) {
           const claim = (extraction.claims || []).find(item => item.id === id);
           return claim ? `[${id}] ${claim.locator}` : `[${id}] Unresolved`;
         }).join("; ")}`,
-        `Source:: ${link(sourceKey)}`,
+        `Source:: ${link(sourcePageKey)}`,
         `Existing Connections:: ${candidate.existing_connections.map(link).join(", ") || "None verified"}`,
         `Suggested New Concepts:: ${candidate.suggested_new_concepts.map(link).join(", ") || "None"}`,
         `Why It Matters:: ${candidate.why_it_matters}`,
@@ -405,17 +480,18 @@ const MAX_INLINE_PDF_BYTES = 10 * 1024 * 1024;
 
 const DOCUMENT_GROUNDING_PROMPT = `
 DOCUMENT MODE - SOURCE GROUNDING:
-- Treat the attached PDF as the only source for title, authors, year, citations, methods, sample, results, quotations, conclusions, and limitations.
+- Treat the attached PDF as the only source for document identity, publication metadata, claims, quotations, dates, methods, results, and limitations.
+- A PDF may be an image-only scan or screenshot. Read the visible page image and preserve its layout boundaries.
+- For newspaper or magazine pages, isolate the requested or filename-indicated article. Exclude browser controls, advertisements, and neighbouring columns.
 - Use current-page and active-project context only for Synthesis::, Connections::, Related Concepts::, and suggested Roam links.
-- Never invent a missing bibliographic field; write "Not stated" when necessary.
+- Never invent a missing field; write "Not stated" or "Not applicable" when necessary.
 - Preserve reported quantities exactly and distinguish absolute effects from relative effects.
-- Separate the authors' claims from RoamPrompt's interpretation.
-- Include Source File:: [[ATTACHED_FILENAME]] near the top of the QEC note.
-- Include Method::, Limitations::, and Open Questions:: when supported by the paper.
-- ALWAYS include Key Citations:: in the QEC note. Select 5-8 works from the paper's actual reference list that are most important to its argument, method, or interpretation.
-- For every key citation, reproduce author/year/title from the PDF bibliography and add a short statement of its role. Never invent a citation and never substitute the attached paper itself for a cited work.
-- Default output is one Schema B QEC reading note followed by 3-5 Schema Z permanent notes.
-- The QEC note and EACH Zettel must be separate ROOT blocks at indentation level 0.
+- Separate source claims, attributed statements, contemporary predictions, and RoamPrompt's later interpretation.
+- Include Source File:: [[ATTACHED_FILENAME]] near the top of the source note.
+- For academic papers, include Method::, Limitations::, Open Questions::, and 5-8 verified Key Citations:: when the bibliography supports them.
+- For news sources, use a News Source Note with publication, issue date, byline or wire service, dateline, article region, and reported claims. Do not manufacture scholarly metadata or bibliography entries.
+- Default output is one source note followed by up to 3 Schema Z permanent notes; academic papers may produce 3-5.
+- The source note and EACH Zettel must be separate ROOT blocks at indentation level 0.
 - Each Zettel must contain one proposition, Evidence Anchor::, Source:: linking to the QEC page, Connections::, Why It Matters::, Tension::, and Open Question::.
 - Do not repeat the QEC summary inside the Zettels. Transform source material into reusable, contestable ideas.
 - Do not emit bullet characters or markdown list markers; Roam creates bullets automatically. Use tabs alone to express hierarchy.
@@ -456,7 +532,7 @@ export function validatePdfDescriptor(file) {
 }
 
 export function buildDocumentInstruction(userText, fileName) {
-  const request = userText.trim() || "Create a source-grounded QEC reading note from this paper.";
+  const request = userText.trim() || "Identify the intended source item and create a source-grounded note from this document.";
   return DOCUMENT_GROUNDING_PROMPT.replace("ATTACHED_FILENAME", fileName) + "\n\nUSER REQUEST:\n" + request;
 }
 
@@ -826,17 +902,41 @@ function getExistingPermanentNoteTitles() {
 }
 
 async function prepareVerifiedDocument(apiKey, userText, pdfPart, documentMetadata) {
-  const extraction = await callStructuredGemini(
-    apiKey,
-    SOURCE_SYSTEM_INSTRUCTION,
-    [
-      { text: `Classify this document and extract a verified source model from this PDF. Source filename: ${documentMetadata.name}. User focus: ${userText || "General scholarly digestion"}` },
-      pdfPart
-    ],
-    SOURCE_EXTRACTION_SCHEMA
-  );
-  extraction.paper.source_file = documentMetadata.name;
-  const extractionCheck = validateExtraction(extraction);
+  const focus = userText || "General source capture. Prefer the article or item indicated by the filename and the visually dominant headline.";
+  const sourceParts = [
+    { text: `Classify this document and extract a verified source model from this PDF. Source filename: ${documentMetadata.name}. User focus: ${focus}` },
+    pdfPart
+  ];
+  let extraction;
+  let extractionRetried = false;
+  try {
+    extraction = await callStructuredGemini(apiKey, SOURCE_SYSTEM_INSTRUCTION, sourceParts, SOURCE_EXTRACTION_SCHEMA);
+  } catch (error) {
+    if (!/invalid structured JSON/i.test(error.message)) throw error;
+    extractionRetried = true;
+    extraction = await callStructuredGemini(
+      apiKey,
+      SOURCE_SYSTEM_INSTRUCTION,
+      [{ text: "The first response was not valid structured JSON. Reinspect the same visual document and return only schema-valid JSON." }, ...sourceParts],
+      SOURCE_EXTRACTION_SCHEMA
+    );
+  }
+  if (extraction?.paper) extraction.paper.source_file = documentMetadata.name;
+  let extractionCheck = validateExtraction(extraction);
+  const ambiguousSelection = extractionCheck.errors.some(message => /target article is ambiguous/.test(message));
+  if (!extractionCheck.valid && !ambiguousSelection && !extractionRetried) {
+    extraction = await callStructuredGemini(
+      apiKey,
+      SOURCE_SYSTEM_INSTRUCTION,
+      [
+        { text: `The first extraction failed source verification: ${extractionCheck.errors.join(" ")} Reinspect the original page, keep neighbouring columns separate, and repair only from visible evidence.` },
+        ...sourceParts
+      ],
+      SOURCE_EXTRACTION_SCHEMA
+    );
+    if (extraction?.paper) extraction.paper.source_file = documentMetadata.name;
+    extractionCheck = validateExtraction(extraction);
+  }
   if (!extractionCheck.valid) {
     throw new Error("Source verification failed: " + extractionCheck.errors.join(" "));
   }
@@ -844,13 +944,15 @@ async function prepareVerifiedDocument(apiKey, userText, pdfPart, documentMetada
   const existingTitles = getExistingPermanentNoteTitles();
   const lockedWorkflow = extraction.paper.document_type === "academic_paper"
     ? "LOCKED WORKFLOW: Create exactly one source-grounded QEC literature note and 3-5 candidate atomic permanent notes. Preserve bibliographic identity, evidence locators, verified key citations, epistemic status, and human review."
-    : "LOCKED WORKFLOW: Create one source-grounded document note and up to 3 candidate atomic permanent notes. Preserve provenance, epistemic status, and human review.";
+    : NEWS_DOCUMENT_TYPES.includes(extraction.paper.document_type)
+      ? "LOCKED WORKFLOW: Create exactly one news source note and up to 3 candidate atomic permanent notes. Preserve publication identity, issue date, byline or wire-service attribution, dateline, article-region and paragraph locators, source-claim status, and human review. Keep reported events, attributed statements, and contemporary predictions distinct."
+      : "LOCKED WORKFLOW: Create one source-grounded document note and up to 3 candidate atomic permanent notes. Preserve provenance, epistemic status, and human review.";
   const pipeline = await callStructuredGemini(
     apiKey,
     ZETTEL_SYSTEM_INSTRUCTION,
     [{
       text: `${lockedWorkflow}
-User focus: ${userText || "General scholarly digestion"}
+User focus: ${focus}
 Existing Roam permanent-note titles (the ONLY allowed existing_connections):
 ${JSON.stringify(existingTitles)}
 
@@ -911,7 +1013,10 @@ function createCandidateReviewModal(targetUid, result) {
   title.innerText = "Review permanent-note candidates";
   title.style.marginTop = "0";
   const identity = document.createElement("div");
-  identity.innerText = `${result.extraction.paper.document_type.replaceAll("_", " ")} detected · ${result.extraction.paper.title} (${result.extraction.paper.publication_year}) · Study period: ${result.extraction.paper.study_period}`;
+  const source = result.extraction.paper;
+  identity.innerText = NEWS_DOCUMENT_TYPES.includes(source.document_type)
+    ? `${source.document_type.replaceAll("_", " ")} detected · ${source.publication_name} · ${source.publication_date} · ${source.title} · Region: ${source.target_region}`
+    : `${source.document_type.replaceAll("_", " ")} detected · ${source.title} (${source.publication_year}) · Study period: ${source.study_period}`;
   Object.assign(identity.style, { padding: "10px", background: "#eef6f3", borderRadius: "6px", marginBottom: "12px" });
   panel.appendChild(title);
   panel.appendChild(identity);
@@ -1130,7 +1235,7 @@ function createChatModal(apiKey, targetUid, extensionAPI) {
       errorText.innerText = "Confirm the Gemini data-transfer notice before processing.";
       return;
     }
-    submitBtn.innerText = pdfAttachment ? "Reading paper..." : "Synthesizing...";
+    submitBtn.innerText = pdfAttachment ? "Reading document..." : "Synthesizing...";
     submitBtn.disabled = true;
     try {
       if (pdfAttachment) {

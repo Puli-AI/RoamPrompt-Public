@@ -2,6 +2,25 @@
 
 All notable public changes to RoamPrompt are recorded here.
 
+## 0.4.4 - 2026-09-07
+
+### Added
+
+- Recognise text-native news articles and scanned or screenshot news clippings as first-class source types.
+- Read image-only PDF pages through Gemini's visual document understanding.
+- Record publication, issue date, dateline, personal byline, wire service, capture mode, article region, and competing headlines separately.
+- Render journalism as a News Source Note rather than forcing it into an academic QEC schema.
+- Distinguish reported events, attributed statements, and contemporary predictions from reader synthesis.
+
+### Reliability and safety
+
+- Use the research focus, filename, headline prominence, and column boundaries to isolate the intended article.
+- Exclude browser controls, advertisements, captions belonging to other items, and neighbouring columns.
+- Stop and request a target headline when the article remains ambiguous.
+- Avoid generating `@Unknown...` source pages when a clipping has no personal byline.
+- Retry malformed or invalid structured extraction once without relaxing provenance requirements.
+- Preserve all existing academic-paper citation checks, Zettelkasten gates, candidate review, and transactional insertion safeguards.
+
 ## 0.4.3 - 2026-09-05
 
 ### Fixed

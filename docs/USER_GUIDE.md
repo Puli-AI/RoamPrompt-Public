@@ -53,12 +53,35 @@ Atomicity means one coherent, reusable proposition. A card may combine closely i
 
 Candidates may be accepted or rejected before graph insertion.
 
+## News-article and clipping workflow
+
+Attach a text-native news article, scanned clipping, or screenshot wrapped as a PDF. If the page contains several stories, enter the intended headline or subject in **Research focus**.
+
+RoamPrompt uses the page image, filename, headline prominence, and column boundaries to identify the target article. Browser controls, advertisements, and neighbouring stories must remain outside the source boundary. If the target remains ambiguous, RoamPrompt stops and reports the competing headlines so you can refine the focus.
+
+The News Source Note records:
+
+- publication and issue date;
+- personal byline and wire-service attribution as separate fields;
+- dateline;
+- text, image-only scan, screenshot, or mixed capture mode;
+- page and article-region locator;
+- reported events;
+- attributed statements;
+- contemporary predictions;
+- synthesis and open questions.
+
+A missing personal byline is recorded as `Not stated`; a credit such as UPI is recorded as a wire service rather than converted into an author. Predictions made in an old clipping remain labelled as contemporary predictions even when later history is known.
+
 ### Epistemic status
 
 RoamPrompt distinguishes:
 
 - **Empirical finding** — directly supported by reported evidence.
 - **Author interpretation** — an interpretation advanced by the source authors.
+- **Reported event** — an event described by a journalistic source.
+- **Attributed statement** — a claim or quotation assigned to a named person or organisation.
+- **Contemporary prediction** — a forecast reported at the source's publication date.
 - **Reader synthesis** — a new implication developed from verified source material.
 - **Speculative hypothesis** — a useful but untested possibility.
 
@@ -74,7 +97,7 @@ Use **RoamPrompt: Weekly Review Agent** to organise recent open tasks and captur
 
 ## Responsible use
 
-- Verify academic claims against their sources.
+- Verify academic and journalistic claims against their sources.
 - Treat generated citations as untrusted until checked.
 - Do not use RoamPrompt as an autonomous authority.
 - Keep regular Roam backups.

@@ -1,6 +1,6 @@
 # Getting Started
 
-RoamPrompt v0.4.1 is the approved stable public release. The Roam Depot listing is pending; the steps below describe the supported workflow once installation is available.
+RoamPrompt v0.4.4 is the approved stable public release. The Roam Depot listing remains pending in PR #1442. Current development acceptance therefore uses a locally loaded extension folder; the Depot steps below apply only after Roam Research approves the listing.
 
 ## Before installation
 
@@ -51,3 +51,18 @@ RoamPrompt should:
 - ask you to review candidates before insertion.
 
 AI-generated notes can contain errors. Check source identity, quantities, citations, evidence locators, and interpretations against the original document.
+
+## News-clipping test
+
+Run **RoamPrompt: Open Chat Window**, attach a newspaper or magazine clipping saved as a PDF, and use the research-focus field to name the intended headline when the page contains several articles.
+
+RoamPrompt should:
+
+- recognise text-native articles and image-only scans or screenshots;
+- isolate the intended article from advertisements and neighbouring columns;
+- preserve publication, issue date, dateline, byline or wire-service attribution, and article region;
+- keep reported events, attributed statements, and contemporary predictions distinct;
+- create a News Source Note and reviewable atomic-note candidates; and
+- stop with an actionable ambiguity message instead of silently combining articles.
+
+Check the generated text and locators against the clipping before insertion.
