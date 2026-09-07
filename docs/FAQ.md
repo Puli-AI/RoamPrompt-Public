@@ -2,7 +2,7 @@
 
 ## Is RoamPrompt available in Roam Depot?
 
-Not yet. Version 0.4.0-rc.3 is the approved public release candidate, and its Roam Depot submission is being prepared.
+Not yet. RoamPrompt v0.4.4 is the current public release, and Roam Depot PR #1442 remains under review. Current development testing uses a locally loaded extension folder.
 
 ## Does RoamPrompt upload my entire graph?
 
@@ -10,7 +10,7 @@ No. Ordinary workflows send the selected input and limited contextual informatio
 
 ## Do I need my own AI account?
 
-The planned public release uses a user-provided Google Gemini API key.
+The current public release uses a user-provided Google Gemini API key.
 
 ## Will I be charged?
 
@@ -19,6 +19,10 @@ Google may charge for Gemini API usage depending on the user's account, model, r
 ## Can RoamPrompt read academic papers?
 
 It supports selected PDF workflows, subject to file-size, model, and document-quality limitations.
+
+## Can RoamPrompt read scanned newspaper clippings?
+
+Version 0.4.4 adds text-native news articles and image-only scanned or screenshot clippings. For multi-column pages, name the intended headline or subject in Research focus. RoamPrompt should exclude advertisements and neighbouring stories, and it stops for clarification when the target remains ambiguous.
 
 ## Are generated citations guaranteed to be correct?
 
@@ -30,7 +34,7 @@ A literature note records what a source says. A permanent note expresses one aut
 
 ## Does RoamPrompt automatically add every proposed permanent note?
 
-The academic workflow is designed to present candidates for human review before insertion.
+The source workflow is designed to present candidates for human review before insertion.
 
 ## Where should I report a problem?
 

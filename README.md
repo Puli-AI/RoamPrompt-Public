@@ -10,6 +10,7 @@ It helps transform source material into:
 
 - structured smart notes;
 - source-grounded QEC literature notes;
+- provenance-rich News Source Notes for text-native and scanned journalism;
 - candidate atomic Zettelkasten notes;
 - explicit evidence and source connections; and
 - reusable ideas that can develop across a Roam graph.
@@ -25,6 +26,8 @@ For source-grounded PDFs, RoamPrompt separates:
 3. what the reader synthesises; and
 4. what remains speculative.
 
+For journalism, it also keeps reported events, attributed statements, and contemporary predictions distinct. Image-only clipping PDFs are read visually, and multi-column pages retain an explicit article-region boundary so neighbouring stories and advertisements are not silently merged.
+
 Permanent-note candidates are reviewed before insertion. Existing Roam connections are distinguished from newly suggested concepts.
 
 ## Core workflows
@@ -39,7 +42,7 @@ Enter notes or paste an image in a lightweight window without leaving the curren
 
 ### PDF document workflow
 
-Attach a supported PDF to produce a source-grounded literature note and reviewable permanent-note candidates.
+Attach a supported PDF to produce a source-grounded source note and reviewable permanent-note candidates. Supported routes include academic papers, reports, books, book chapters, news articles, scanned news clippings, and other documents.
 
 ### Weekly Review
 
@@ -47,9 +50,9 @@ Organise recent tasks and captured quotations into a structured reflection.
 
 ## Release status
 
-RoamPrompt v0.4.3 is the approved stable public release. Its reviewed, self-contained distribution file is available in this repository.
+RoamPrompt v0.4.4 is the approved stable public release. Its reviewed, self-contained distribution file is available in this repository.
 
-RoamPrompt is **not yet listed in Roam Depot**. General users should wait for the Depot release; technically experienced testers may review the source bundle and documentation here. Internal development history and experimental materials remain separate.
+RoamPrompt is **not yet listed in Roam Depot**. PR #1442 remains under review. Current development testing therefore uses a locally loaded extension folder; general users should wait for the Depot release. Internal development history and experimental materials remain separate.
 
 ## Documentation
 
