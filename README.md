@@ -42,7 +42,7 @@ Enter notes or paste an image in a lightweight window without leaving the curren
 
 ### PDF document workflow
 
-Attach a supported PDF to produce a source-grounded source note and reviewable permanent-note candidates. Supported routes include academic papers, reports, books, book chapters, news articles, scanned news clippings, and other documents.
+Attach a supported PDF to produce a source-grounded source note and reviewable permanent-note candidates. Supported routes include academic papers, reports, books, book chapters, news articles, scanned news clippings, and other documents. For a PDF already embedded in the current Roam page or Daily Note, run **RoamPrompt: Read PDF on Current Page**. A sole PDF loads automatically; multiple PDFs open a chooser.
 
 ### Weekly Review
 

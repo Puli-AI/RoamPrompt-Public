@@ -11,6 +11,8 @@ All notable public changes to RoamPrompt are recorded here.
 - Record publication, issue date, dateline, personal byline, wire service, capture mode, article region, and competing headlines separately.
 - Render journalism as a News Source Note rather than forcing it into an academic QEC schema.
 - Distinguish reported events, attributed statements, and contemporary predictions from reader synthesis.
+- Read a PDF already embedded anywhere in the current Roam page with **RoamPrompt: Read PDF on Current Page**.
+- Support an Android-capture/Mac-processing workflow after the uploaded attachment synchronises to the graph.
 
 ### Reliability and safety
 
@@ -20,6 +22,10 @@ All notable public changes to RoamPrompt are recorded here.
 - Avoid generating `@Unknown...` source pages when a clipping has no personal byline.
 - Retry malformed or invalid structured extraction once without relaxing provenance requirements.
 - Preserve all existing academic-paper citation checks, Zettelkasten gates, candidate review, and transactional insertion safeguards.
+- Rebuild candidate evidence anchors deterministically from verified source-claim locators.
+- Reject a news candidate that mixes a reported event with a contemporary prediction.
+- Resolve embedded PDFs from focused blocks, open pages, nested page ancestry, and the active Daily Note when the rendered viewer has taken focus.
+- Validate the final private release with 42 automated tests and live acceptance against an embedded academic PDF and an image-only NYT clipping.
 
 ## 0.4.3 - 2026-09-05
 

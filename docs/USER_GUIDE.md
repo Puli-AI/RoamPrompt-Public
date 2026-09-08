@@ -16,6 +16,17 @@ Example focus:
 
 > Examine implications for assessment validity, teacher expertise, and responsible AI adoption.
 
+## Reading an already embedded PDF
+
+Use **RoamPrompt: Read PDF on Current Page** when a PDF has already been uploaded into a Roam page or Daily Note. The command searches the full nested block tree rather than requiring the raw PDF-component text to be exposed.
+
+- If exactly one PDF is present, RoamPrompt downloads and preloads it into the Ambient Assistant.
+- If several PDFs are present, RoamPrompt displays a chooser.
+- On Daily Notes, RoamPrompt falls back to the active day's page when the rendered viewer has taken focus.
+- The existing 10 MB PDF limit, Gemini consent, candidate review, and transactional insertion safeguards still apply.
+
+A PDF may be captured from Android and processed after it synchronises to a Mac or another device where the extension is installed. The locally loaded extension cannot itself execute on Android.
+
 ## Academic-paper workflow
 
 For a supported scholarly PDF, RoamPrompt applies a source-grounded reading workflow.

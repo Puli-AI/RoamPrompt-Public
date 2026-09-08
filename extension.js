@@ -251,10 +251,11 @@ function evaluateCandidates(pipeline, extraction, existingGraphTitles = []) {
     if (!EPISTEMIC_STATUSES.includes(candidate.epistemic_status)) reasons.push("Invalid epistemic status.");
     if (!candidate.evidence_claim_ids?.length) reasons.push("No evidence claim selected.");
     if ((candidate.evidence_claim_ids || []).some(id => !claimIds.has(id))) reasons.push("References an unknown source claim.");
-    if (!candidate.evidence_anchor) reasons.push("Missing evidence anchor.");
     const citedClaims = (candidate.evidence_claim_ids || []).map(id => sourceClaims.get(id)).filter(Boolean);
-    const missingLocators = citedClaims.filter(claim => !candidate.evidence_anchor.includes(claim.locator));
-    if (missingLocators.length) reasons.push("Evidence anchor does not reproduce every cited source locator.");
+    const verifiedEvidenceAnchor = (candidate.evidence_claim_ids || []).map(id => {
+      const claim = sourceClaims.get(id);
+      return claim ? `[${id}] ${claim.locator}` : `[${id}] Unresolved`;
+    }).join("; ");
     if (candidate.epistemic_status === "empirical_finding" && citedClaims.some(claim => claim.epistemic_status !== "empirical_finding")) {
       reasons.push("Empirical candidate relies on a non-empirical source claim.");
     }
@@ -262,8 +263,8 @@ function evaluateCandidates(pipeline, extraction, existingGraphTitles = []) {
       reasons.push("Author-interpretation candidate lacks a matching source interpretation.");
     }
     if (["reported_event", "attributed_statement", "contemporary_prediction"].includes(candidate.epistemic_status)
-      && !citedClaims.some(claim => claim.epistemic_status === candidate.epistemic_status)) {
-      reasons.push(`${candidate.epistemic_status} candidate lacks a matching source claim.`);
+      && citedClaims.some(claim => claim.epistemic_status !== candidate.epistemic_status)) {
+      reasons.push(`${candidate.epistemic_status} candidate mixes source claims with different epistemic statuses.`);
     }
     if (seenTitles.has(candidate.title)) reasons.push("Duplicate candidate title.");
     seenTitles.add(candidate.title);
@@ -272,7 +273,12 @@ function evaluateCandidates(pipeline, extraction, existingGraphTitles = []) {
       reasons.push("Speculation uses empirical certainty language.");
     }
 
-    const reviewed = { ...candidate, accepted: reasons.length === 0, rejection_reasons: reasons };
+    const reviewed = {
+      ...candidate,
+      evidence_anchor: verifiedEvidenceAnchor,
+      accepted: reasons.length === 0,
+      rejection_reasons: reasons
+    };
     if (reviewed.accepted) accepted.push(reviewed);
     else rejected.push(reviewed);
   }
@@ -523,10 +529,10 @@ OUTPUT SHAPE:
 
 export function validatePdfDescriptor(file) {
   if (!file) return { valid: false, error: "Choose a PDF first." };
-  if (file.type !== "application/pdf") return { valid: false, error: "Only PDF documents are supported in v0.3." };
+  if (file.type !== "application/pdf") return { valid: false, error: "Only PDF documents are currently supported." };
   if (!file.size) return { valid: false, error: "The selected PDF is empty." };
   if (file.size > MAX_INLINE_PDF_BYTES) {
-    return { valid: false, error: "This PDF is larger than the 10 MB inline limit. Large-document upload will be added in v0.4." };
+    return { valid: false, error: "This PDF is larger than the 10 MB inline limit. Large-document upload is not yet supported." };
   }
   return { valid: true, error: null };
 }
@@ -534,6 +540,87 @@ export function validatePdfDescriptor(file) {
 export function buildDocumentInstruction(userText, fileName) {
   const request = userText.trim() || "Identify the intended source item and create a source-grounded note from this document.";
   return DOCUMENT_GROUNDING_PROMPT.replace("ATTACHED_FILENAME", fileName) + "\n\nUSER REQUEST:\n" + request;
+}
+
+function pdfFileName(label, url) {
+  const labelledName = String(label || "").trim().split("/").pop();
+  if (/\.pdf$/i.test(labelledName)) return labelledName;
+  try {
+    const decodedPath = decodeURIComponent(new URL(url).pathname);
+    const pathName = decodedPath.split("/").pop();
+    if (/\.pdf$/i.test(pathName)) return pathName;
+  } catch (error) {
+    console.warn("Could not derive the attached PDF filename", error);
+  }
+  return "roam-attachment.pdf";
+}
+
+function looksLikePdf(label, url) {
+  if (/\.pdf$/i.test(String(label || "").trim())) return true;
+  try {
+    return /\.pdf(?:$|[?&#])/i.test(decodeURIComponent(url));
+  } catch (error) {
+    return /\.pdf(?:$|[?&#])/i.test(url);
+  }
+}
+
+export function findPdfAttachment(blockText) {
+  const text = String(blockText || "");
+  const component = text.match(/\{\{\s*(?:\[\[)?pdf(?:\]\])?\s*:\s*(https?:\/\/[^}]+?)\s*\}\}/i);
+  if (component) return { url: component[1].trim(), name: pdfFileName("", component[1].trim()) };
+
+  const markdownLinks = text.matchAll(/!?\[([^\]]*)\]\((https?:\/\/[^)]+)\)/gi);
+  for (const match of markdownLinks) {
+    const label = match[1].trim();
+    const url = match[2].trim();
+    if (looksLikePdf(label, url)) {
+      return { url, name: pdfFileName(label, url) };
+    }
+  }
+
+  const bareUrls = text.match(/https?:\/\/[^\s<>()]+/gi) || [];
+  for (const rawUrl of bareUrls) {
+    const url = rawUrl.replace(/[.,;]+$/, "");
+    if (looksLikePdf("", url)) {
+      return { url, name: pdfFileName("", url) };
+    }
+  }
+  return null;
+}
+
+export function collectPdfAttachments(blockRows) {
+  const attachments = [];
+  const seenUrls = new Set();
+  for (const row of blockRows || []) {
+    const blockUid = Array.isArray(row) ? row[0] : row?.uid;
+    const blockText = Array.isArray(row) ? row[1] : row?.string;
+    const reference = findPdfAttachment(blockText);
+    if (!blockUid || !reference || seenUrls.has(reference.url)) continue;
+    seenUrls.add(reference.url);
+    attachments.push({ ...reference, blockUid });
+  }
+  return attachments;
+}
+
+async function downloadPdfAttachment(reference) {
+  let response;
+  try {
+    response = await fetch(reference.url);
+  } catch (error) {
+    throw new Error("The PDF link could not be downloaded from this device. Open the attachment once to confirm access, or use Attach PDF.");
+  }
+  if (!response.ok) throw new Error(`The attached PDF download failed (HTTP ${response.status}). Open the attachment once to confirm access, or use Attach PDF.`);
+  const contentLength = Number(response.headers.get("content-length") || 0);
+  if (contentLength > MAX_INLINE_PDF_BYTES) throw new Error("This PDF is larger than the 10 MB inline limit.");
+  const blob = await response.blob();
+  const mimeType = String(blob.type || "").split(";")[0].toLowerCase();
+  if (mimeType && !["application/pdf", "application/octet-stream"].includes(mimeType)) {
+    throw new Error(`The focused attachment returned ${mimeType}, not a PDF.`);
+  }
+  const file = new File([blob], reference.name, { type: "application/pdf" });
+  const validation = validatePdfDescriptor(file);
+  if (!validation.valid) throw new Error(validation.error);
+  return file;
 }
 
 export function parseRoamLines(formattedText) {
@@ -582,11 +669,111 @@ function readFileAsBase64(file) {
 }
 
 let loadedExtensionApi = null;
-const ROAMPROMPT_COMMAND_LABELS = [
+export const ROAMPROMPT_COMMAND_LABELS = [
   "Trigger RoamPrompt",
   "RoamPrompt: Open Chat Window",
+  "RoamPrompt: Read PDF on Current Page",
   "RoamPrompt: Weekly Review Agent"
 ];
+
+function getBlockString(blockUid) {
+  if (!blockUid) return "";
+  try {
+    const query = `[:find (pull ?b [:block/string]) :where [?b :block/uid "${blockUid}"]]`;
+    return window.roamAlphaAPI.q(query)?.[0]?.[0]?.string || "";
+  } catch (error) {
+    console.warn("Could not read the candidate PDF block", error);
+    return "";
+  }
+}
+
+async function openChatForTarget(extensionAPI, targetUid) {
+  const apiKey = extensionAPI.settings.get("gemini-api-key");
+  if (!apiKey) { alert("Please set your Gemini API Key in Settings."); return; }
+  if (!extensionAPI.settings.get("gemini-data-consent")) { alert("Enable Gemini data transfer in RoamPrompt Settings before processing content."); return; }
+
+  let attachedPdf = null;
+  const pdfReference = findPdfAttachment(getBlockString(targetUid));
+  if (pdfReference) {
+    try {
+      attachedPdf = await downloadPdfAttachment(pdfReference);
+    } catch (error) {
+      alert(`RoamPrompt could not load the PDF attached to this block: ${error.message}`);
+      return;
+    }
+  }
+  createChatModal(apiKey, targetUid, extensionAPI, attachedPdf);
+}
+
+function containingPageUid(candidateUid) {
+  if (!candidateUid) return "";
+  const pageResult = window.roamAlphaAPI.q(
+    `[:find ?pageUid :where [?b :block/uid "${candidateUid}"] [?b :block/page ?p] [?p :block/uid ?pageUid]]`
+  );
+  if (pageResult?.[0]?.[0]) return pageResult[0][0];
+  const pageEntity = window.roamAlphaAPI.q(
+    `[:find ?uid :where [?p :block/uid "${candidateUid}"] [?p :node/title] [?p :block/uid ?uid]]`
+  );
+  return pageEntity?.[0]?.[0] || "";
+}
+
+export function chooseCurrentPageUid(openUid, focusedUid, todayUid, resolvePageUid) {
+  for (const candidateUid of [focusedUid, openUid]) {
+    const pageUid = resolvePageUid(candidateUid);
+    if (pageUid) return pageUid;
+  }
+  return todayUid || "";
+}
+
+function findPdfAttachmentsOnPage(openUid, focusedUid) {
+  try {
+    const todayUid = window.roamAlphaAPI.util?.dateToPageUid?.(new Date()) || "";
+    const pageUid = chooseCurrentPageUid(openUid, focusedUid, todayUid, containingPageUid);
+    if (!pageUid) return [];
+    const pageRows = window.roamAlphaAPI.q(
+      `[:find ?uid ?string :where [?p :block/uid "${pageUid}"] [?b :block/page ?p] [?b :block/uid ?uid] [?b :block/string ?string]]`
+    ) || [];
+    const descendantRows = window.roamAlphaAPI.q(
+      `[:find ?uid ?string :where [?p :block/uid "${pageUid}"] [?b :block/parents ?p] [?b :block/uid ?uid] [?b :block/string ?string]]`
+    ) || [];
+    return collectPdfAttachments([...pageRows, ...descendantRows]);
+  } catch (error) {
+    console.warn("Could not scan the current page for PDF attachments", error);
+    return [];
+  }
+}
+
+function createPdfPicker(attachments, extensionAPI) {
+  document.getElementById("roamprompt-pdf-picker")?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "roamprompt-pdf-picker";
+  Object.assign(overlay.style, { position: "fixed", inset: "0", backgroundColor: "rgba(0,0,0,0.5)", zIndex: "10000", display: "flex", justifyContent: "center", alignItems: "center" });
+  const panel = document.createElement("div");
+  Object.assign(panel.style, { width: "520px", maxWidth: "90vw", maxHeight: "75vh", overflowY: "auto", background: "#fff", borderRadius: "10px", padding: "20px", fontFamily: "sans-serif", boxShadow: "0 12px 30px rgba(0,0,0,.3)" });
+  const title = document.createElement("h3");
+  title.innerText = "Choose a PDF to read";
+  title.style.marginTop = "0";
+  panel.appendChild(title);
+  for (const attachment of attachments) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.innerText = `📄 ${attachment.name}`;
+    Object.assign(button.style, { display: "block", width: "100%", marginBottom: "8px", padding: "10px", textAlign: "left", border: "1px solid #cad3d8", borderRadius: "6px", background: "#f7f9fa", cursor: "pointer" });
+    button.onclick = async () => {
+      overlay.remove();
+      await openChatForTarget(extensionAPI, attachment.blockUid);
+    };
+    panel.appendChild(button);
+  }
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.innerText = "Cancel";
+  Object.assign(cancel.style, { float: "right", marginTop: "8px", padding: "8px 12px" });
+  cancel.onclick = () => overlay.remove();
+  panel.appendChild(cancel);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+}
 
 export default {
   onload: ({ extensionAPI }) => {
@@ -631,20 +818,34 @@ export default {
     // TOOL 2: CHAT MODAL
     extensionAPI.ui.commandPalette.addCommand({
       label: "RoamPrompt: Open Chat Window",
-      callback: () => {
-        const apiKey = extensionAPI.settings.get("gemini-api-key");
-        if (!apiKey) { alert("Please set your Gemini API Key in Settings."); return; }
-        if (!extensionAPI.settings.get("gemini-data-consent")) { alert("Enable Gemini data transfer in RoamPrompt Settings before processing content."); return; }
-        
-        let targetUid = null;
+      callback: async () => {
         const focusedBlock = window.roamAlphaAPI.ui.getFocusedBlock();
-        if (focusedBlock) { targetUid = focusedBlock["block-uid"]; } 
-        else { targetUid = window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid(); }
-        createChatModal(apiKey, targetUid, extensionAPI);
+        const targetUid = focusedBlock?.["block-uid"]
+          || window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+        await openChatForTarget(extensionAPI, targetUid);
       }
     });
 
-    // TOOL 3: WEEKLY REVIEW AGENT
+    // TOOL 3: CURRENT-PAGE PDF READER
+    extensionAPI.ui.commandPalette.addCommand({
+      label: "RoamPrompt: Read PDF on Current Page",
+      callback: async () => {
+        const openUid = window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+        const focusedUid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+        const attachments = findPdfAttachmentsOnPage(openUid, focusedUid);
+        if (!attachments.length) {
+          alert("RoamPrompt found no PDF attachment on the current page.");
+          return;
+        }
+        if (attachments.length === 1) {
+          await openChatForTarget(extensionAPI, attachments[0].blockUid);
+          return;
+        }
+        createPdfPicker(attachments, extensionAPI);
+      }
+    });
+
+    // TOOL 4: WEEKLY REVIEW AGENT
     extensionAPI.ui.commandPalette.addCommand({
       label: "RoamPrompt: Weekly Review Agent",
       callback: async () => {
@@ -750,6 +951,7 @@ ${openTodos.join('\n')}
   onunload: () => {
     document.getElementById("roamprompt-modal")?.remove();
     document.getElementById("roamprompt-review-modal")?.remove();
+    document.getElementById("roamprompt-pdf-picker")?.remove();
     const removeCommand = loadedExtensionApi?.ui?.commandPalette?.removeCommand;
     if (typeof removeCommand === "function") {
       for (const label of ROAMPROMPT_COMMAND_LABELS) {
@@ -1086,7 +1288,7 @@ function createCandidateReviewModal(targetUid, result) {
   document.body.appendChild(overlay);
 }
 
-function createChatModal(apiKey, targetUid, extensionAPI) {
+function createChatModal(apiKey, targetUid, extensionAPI, initialPdf = null) {
   if (document.getElementById("roamprompt-modal")) return;
 
   const overlay = document.createElement("div");
@@ -1276,5 +1478,6 @@ function createChatModal(apiKey, targetUid, extensionAPI) {
   chatBox.appendChild(btnContainer);
   overlay.appendChild(chatBox);
   document.body.appendChild(overlay);
+  if (initialPdf) acceptPdf(initialPdf);
   textarea.focus();
 }
