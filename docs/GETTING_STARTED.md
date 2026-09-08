@@ -52,6 +52,18 @@ RoamPrompt should:
 
 AI-generated notes can contain errors. Check source identity, quantities, citations, evidence locators, and interpretations against the original document.
 
+## Already-embedded PDF test
+
+Upload a PDF to a Daily Note from Android or another device and allow the graph to synchronise. On a device where RoamPrompt is installed:
+
+1. Display the embedded PDF.
+2. Open Roam's command palette.
+3. Run **RoamPrompt: Read PDF on Current Page**.
+4. Confirm that a sole PDF is preloaded automatically, or select the intended file when several PDFs are present.
+5. Review the source identity, evidence anchors, and permanent-note candidates before insertion.
+
+The command scans the current page's nested block tree. On the Daily Notes screen it can fall back to the active day's page when the rendered PDF viewer has taken focus. The extension itself cannot run on Android until RoamPrompt is available there.
+
 ## News-clipping test
 
 Run **RoamPrompt: Open Chat Window**, attach a newspaper or magazine clipping saved as a PDF, and use the research-focus field to name the intended headline when the page contains several articles.
