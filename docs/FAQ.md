@@ -20,6 +20,10 @@ Google may charge for Gemini API usage depending on the user's account, model, r
 
 It supports selected PDF workflows, subject to file-size, model, and document-quality limitations.
 
+## Can RoamPrompt read a PDF already embedded in a Daily Note?
+
+Yes. On a device where the extension is installed, display the PDF and run **RoamPrompt: Read PDF on Current Page**. One PDF loads automatically; multiple PDFs produce a chooser. A PDF uploaded from Android can be processed after synchronisation, but the locally loaded extension cannot execute on Android itself.
+
 ## Can RoamPrompt read scanned newspaper clippings?
 
 Version 0.4.4 adds text-native news articles and image-only scanned or screenshot clippings. For multi-column pages, name the intended headline or subject in Research focus. RoamPrompt should exclude advertisements and neighbouring stories, and it stops for clarification when the target remains ambiguous.
