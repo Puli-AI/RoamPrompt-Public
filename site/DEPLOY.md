@@ -13,6 +13,10 @@ sudo curl --fail --location --output /var/www/roamprompt/assets/puli-consulting-
 sudo curl --fail --location --output /var/www/roamprompt/assets/review-candidates.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/review-candidates.webp
 sudo curl --fail --location --output /var/www/roamprompt/assets/qec-reading-note.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/qec-reading-note.webp
 sudo curl --fail --location --output /var/www/roamprompt/assets/permanent-notes.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/permanent-notes.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/pdf-current-page.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/pdf-current-page.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/academic-review.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/academic-review.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/news-clipping-input.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/news-clipping-input.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/news-clipping-review.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/news-clipping-review.webp
 
 sudo chown -R www-data:www-data /var/www/roamprompt
 sudo find /var/www/roamprompt -type f -exec chmod 644 {} \;
