@@ -8,12 +8,12 @@ Depending on the selected workflow, RoamPrompt may send the following informatio
 
 - text selected or entered by the user;
 - pasted images;
-- attached PDF documents;
+- attached PDF documents, including files downloaded from synced Roam attachment links at the user's request;
 - the current Roam page title;
 - titles associated with active projects; and
 - limited existing-note titles used to suggest graph connections.
 
-RoamPrompt does not require the entire graph to be uploaded for ordinary operation.
+RoamPrompt does not require the entire graph to be uploaded for ordinary operation. When **RoamPrompt: Read PDF on Current Page** is invoked, the extension searches block strings on that page for PDF references, downloads the selected attachment in the user's browser, and sends the PDF directly to Google Gemini after consent. The PDF is not routed through a Puli AI server.
 
 ## Gemini API key
 
