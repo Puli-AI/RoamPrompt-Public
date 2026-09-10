@@ -46,13 +46,13 @@ Attach a supported PDF to produce a source-grounded source note and reviewable p
 
 ### Weekly Review
 
-Organise recent tasks and captured quotations into a structured reflection.
+Organise recent tasks and captured quotations into a structured reflection. Version 0.4.5 restricts this workflow to the previous seven days and caps transmission at 50 Quote block strings and 50 open TODO block strings, with a workflow-specific confirmation before anything is sent to Gemini.
 
 ## Release status
 
-RoamPrompt v0.4.4 is the approved stable public release. Its reviewed, self-contained distribution file is available in this repository.
+RoamPrompt v0.4.5 is the current public reliability and privacy update. Its self-contained distribution file is available in this repository.
 
-RoamPrompt is **not yet listed in Roam Depot**. PR #1442 remains under review. Current development testing therefore uses a locally loaded extension folder; general users should wait for the Depot release. Internal development history and experimental materials remain separate.
+RoamPrompt is **not yet listed in Roam Depot**. PR #1442 remains open while the v0.4.5 corrective release is reviewed. Current development testing therefore uses a locally loaded extension folder; general users should wait for the Depot release. Internal development history and experimental materials remain separate.
 
 ## Documentation
 
