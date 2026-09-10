@@ -2,11 +2,11 @@
 
 ## Is RoamPrompt available in Roam Depot?
 
-Not yet. RoamPrompt v0.4.4 is the current public release, and Roam Depot PR #1442 remains under review. Current development testing uses a locally loaded extension folder.
+Not yet. RoamPrompt v0.4.5 is the current public reliability and privacy update, and Roam Depot PR #1442 remains open. Current development testing uses a locally loaded extension folder.
 
 ## Does RoamPrompt upload my entire graph?
 
-No. Ordinary workflows send the selected input and limited contextual information needed for the requested task. See the [Privacy Guide](PRIVACY.md).
+No. Ordinary workflows send the selected input and limited contextual information needed for the requested task. Weekly Review locally selects Quote and open TODO block strings from the previous seven days, caps each category at 50 items, and asks for separate confirmation before transmission. See the [Privacy Guide](PRIVACY.md).
 
 ## Do I need my own AI account?
 
