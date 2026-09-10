@@ -111,6 +111,24 @@ Use **RoamPrompt: Weekly Review Agent** to organise recent open tasks and captur
 
 Eligible items are ordered newest first and capped at 50 strings per category. A separate confirmation describes these limits before transmission to Gemini. Review the result before relying on task migration or thematic summaries.
 
+### Purpose and rationale
+
+Weekly Review asks Gemini to group recent quote material by theme, reproduce open tasks for deliberate migration, and draft a short synthesis. The selected block strings must be sent because semantic grouping and synthesis are performed by Gemini rather than locally in the browser.
+
+### Setup
+
+- Add `[[Quotes]]` to every quote block that should enter the review queue.
+- Use Roam's open `[[TODO]]` task syntax for tasks that should be included.
+- Optionally add `[[Wisdom & Quotes]]` to a quote block after curation; Weekly Review treats that link as an exclusion marker.
+
+Dedicated destination pages are not prerequisites. Roam creates linked pages when a page link is first used.
+
+### Output and movement
+
+Start the command with a disposable or intentionally chosen bullet focused. The generated report replaces that focused bullet. It presents curated quote candidates, tasks to review and migrate, and a weekly synthesis.
+
+The source Quote and TODO blocks remain where they were. RoamPrompt does not automatically move, delete, complete, or refile them. A page such as `[[Wisdom & Quotes]]` may show linked references because the report mentions it; that is not the same as moving blocks into the page.
+
 ## Insertion reliability
 
 RoamPrompt resolves an insertion target from the focused block, open page, or today's Daily Note and revalidates it immediately before writing. All block writes are awaited. If a transactional insertion fails, newly created blocks are removed and a replaced root block is restored before the error is reported.
