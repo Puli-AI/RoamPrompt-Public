@@ -676,6 +676,48 @@ export const ROAMPROMPT_COMMAND_LABELS = [
   "RoamPrompt: Weekly Review Agent"
 ];
 
+export const WEEKLY_REVIEW_WINDOW_DAYS = 7;
+export const WEEKLY_REVIEW_MAX_ITEMS_PER_TYPE = 50;
+
+export function selectRecentWeeklyItems(rows, since, limit = WEEKLY_REVIEW_MAX_ITEMS_PER_TYPE) {
+  return (rows || [])
+    .map(result => result?.[0])
+    .filter(block => typeof block?.string === "string" && block.string.trim() && block["create-time"] >= since)
+    .sort((left, right) => right["create-time"] - left["create-time"])
+    .slice(0, limit)
+    .map(block => block.string);
+}
+
+export function chooseInsertionTargetUid(preferredUid, fallbackUids, targetExists) {
+  for (const uid of [preferredUid, ...(fallbackUids || [])]) {
+    if (typeof uid === "string" && uid.trim() && targetExists(uid)) return uid;
+  }
+  return "";
+}
+
+function roamTargetExists(uid) {
+  try {
+    return Boolean(window.roamAlphaAPI.pull("[:block/uid]", [":block/uid", uid]));
+  } catch (error) {
+    console.warn("Could not validate Roam insertion target", error);
+    return false;
+  }
+}
+
+function resolveCurrentInsertionTargetUid(preferredUid = "") {
+  const focusedUid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"] || "";
+  const openUid = window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid() || "";
+  const todayUid = window.roamAlphaAPI.util?.dateToPageUid?.(new Date()) || "";
+  return chooseInsertionTargetUid(preferredUid, [focusedUid, openUid, todayUid], roamTargetExists);
+}
+
+function requireExistingInsertionTarget(uid) {
+  if (!roamTargetExists(uid)) {
+    throw new Error("The original Roam insertion target is no longer available. Close this review, click the destination page or block, and run RoamPrompt again.");
+  }
+  return uid;
+}
+
 function getBlockString(blockUid) {
   if (!blockUid) return "";
   try {
@@ -692,8 +734,14 @@ async function openChatForTarget(extensionAPI, targetUid) {
   if (!apiKey) { alert("Please set your Gemini API Key in Settings."); return; }
   if (!extensionAPI.settings.get("gemini-data-consent")) { alert("Enable Gemini data transfer in RoamPrompt Settings before processing content."); return; }
 
+  const resolvedTargetUid = resolveCurrentInsertionTargetUid(targetUid);
+  if (!resolvedTargetUid) {
+    alert("RoamPrompt could not find a valid insertion destination. Open a Roam page or click inside a block, then try again.");
+    return;
+  }
+
   let attachedPdf = null;
-  const pdfReference = findPdfAttachment(getBlockString(targetUid));
+  const pdfReference = findPdfAttachment(getBlockString(resolvedTargetUid));
   if (pdfReference) {
     try {
       attachedPdf = await downloadPdfAttachment(pdfReference);
@@ -702,7 +750,7 @@ async function openChatForTarget(extensionAPI, targetUid) {
       return;
     }
   }
-  createChatModal(apiKey, targetUid, extensionAPI, attachedPdf);
+  createChatModal(apiKey, resolvedTargetUid, extensionAPI, attachedPdf);
 }
 
 function containingPageUid(candidateUid) {
@@ -778,7 +826,7 @@ function createPdfPicker(attachments, extensionAPI) {
 export default {
   onload: ({ extensionAPI }) => {
     loadedExtensionApi = extensionAPI;
-    
+
     extensionAPI.settings.panel.create({
       tabTitle: "RoamPrompt",
       settings: [
@@ -791,7 +839,7 @@ export default {
         {
           id: "gemini-data-consent",
           name: "Gemini data transfer",
-          description: "Allow RoamPrompt to send selected content and limited graph context directly to Google Gemini.",
+          description: "Allow RoamPrompt to send selected content and disclosed workflow context directly to Google Gemini. Weekly Review separately confirms and sends at most 50 recent Quotes and 50 recent open TODO block strings.",
           action: { type: "switch" }
         }
       ]
@@ -820,8 +868,11 @@ export default {
       label: "RoamPrompt: Open Chat Window",
       callback: async () => {
         const focusedBlock = window.roamAlphaAPI.ui.getFocusedBlock();
-        const targetUid = focusedBlock?.["block-uid"]
-          || window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+        const targetUid = resolveCurrentInsertionTargetUid(focusedBlock?.["block-uid"] || "");
+        if (!targetUid) {
+          alert("RoamPrompt could not find a valid insertion destination. Open a Roam page or click inside a block, then try again.");
+          return;
+        }
         await openChatForTarget(extensionAPI, targetUid);
       }
     });
@@ -856,35 +907,43 @@ export default {
         const focusedBlock = window.roamAlphaAPI.ui.getFocusedBlock();
         if (focusedBlock == null) { alert("Please click inside a bullet point on your Daily Notes page to run the Weekly Review."); return; }
         const blockUid = focusedBlock["block-uid"];
-        
-        window.roamAlphaAPI.updateBlock({"block": {"uid": blockUid, "string": "⏳ AI Agent is scanning your graph and curating your week..."}});
-        
-        // 1. Datalog: Find Unprocessed Quotes
+        if (!confirm("Weekly Review will send directly to Google Gemini up to 50 [[Quotes]] block strings and 50 open [[TODO]] block strings created during the past 7 days, using your API key. Continue?")) return;
+
+        const originalText = getBlockString(blockUid);
+        try {
+          await window.roamAlphaAPI.updateBlock({"block": {"uid": blockUid, "string": "⏳ AI Agent is scanning your recent Quotes and TODOs..."}});
+        } catch (error) {
+          alert(`Weekly Review could not update its destination block: ${error.message}`);
+          return;
+        }
+        const oneWeekAgo = Date.now() - (WEEKLY_REVIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+        // 1. Datalog: Find recent Unprocessed Quotes
         let unprocessedQuotes = [];
         try {
           let quotesQuery = window.roamAlphaAPI.q(`
-            [:find (pull ?b [:block/string])
+            [:find (pull ?b [:block/string :block/create-time])
              :where
              [?b :block/refs ?qPage] [?qPage :node/title "Quotes"]
+             [?b :block/create-time ?created]
+             [(>= ?created ${oneWeekAgo})]
              (not [?b :block/refs ?wqPage] [?wqPage :node/title "Wisdom & Quotes"])]
           `);
-          unprocessedQuotes = quotesQuery.map(res => res[0].string);
+          unprocessedQuotes = selectRecentWeeklyItems(quotesQuery, oneWeekAgo);
         } catch(e) { console.warn("Quote query failed", e); }
 
         // 2. Datalog: Find Open TODOs from the last 7 days
         let openTodos = [];
         try {
-          let oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
           let todoQuery = window.roamAlphaAPI.q(`
             [:find (pull ?b [:block/string :block/create-time])
              :where
              [?b :block/refs ?todoPage] [?todoPage :node/title "TODO"]
+             [?b :block/create-time ?created]
+             [(>= ?created ${oneWeekAgo})]
              (not [?b :block/refs ?donePage] [?donePage :node/title "DONE"])]
           `);
-          openTodos = todoQuery
-            .map(res => res[0])
-            .filter(b => b["create-time"] > oneWeekAgo)
-            .map(b => b.string);
+          openTodos = selectRecentWeeklyItems(todoQuery, oneWeekAgo);
         } catch(e) { console.warn("TODO query failed", e); }
 
         const weeklyPrompt = `
@@ -923,27 +982,16 @@ ${openTodos.join('\n')}
           const data = await response.json();
           if (!response.ok) throw new Error(describeGeminiError(response, data));
 
-          const formattedText = data.candidates[0].content.parts[0].text;
-          const lines = formattedText.split('\n').filter(line => line.trim() !== '');
-
-          if (lines.length > 0) {
-            window.roamAlphaAPI.updateBlock({ "block": { "uid": blockUid, "string": lines[0].trim() } });
-            const parentMap = { 0: blockUid };
-            for (let i = 1; i < lines.length; i++) {
-              const line = lines[i];
-              const leadingWhitespace = line.match(/^\s*/)[0];
-              let level = leadingWhitespace.includes('\t') ? leadingWhitespace.length : Math.floor(leadingWhitespace.length / 4); 
-              const newUid = window.roamAlphaAPI.util.generateUID();
-              const parentUid = parentMap[level > 0 ? level - 1 : 0] || blockUid;
-              window.roamAlphaAPI.createBlock({
-                "location": { "parent-uid": parentUid, "order": "last" },
-                "block": { "uid": newUid, "string": line.trim() }
-              });
-              parentMap[level] = newUid;
-            }
-          }
+          const plan = parseRoamLines(extractGeminiText(data));
+          requireExistingInsertionTarget(blockUid);
+          await insertPlanTransaction(createRoamWriteAdapter(), blockUid, plan, { replaceRoot: true, originalText, preserveOriginal: false });
         } catch (error) {
-          window.roamAlphaAPI.updateBlock({"block": {"uid": blockUid, "string": `❌ API Error: ${error.message}`}});
+          try {
+            if (roamTargetExists(blockUid)) await window.roamAlphaAPI.updateBlock({"block": {"uid": blockUid, "string": originalText}});
+          } catch (restoreError) {
+            console.error("Weekly Review could not restore its destination block", restoreError);
+          }
+          alert(`Weekly Review failed: ${error.message}`);
         }
       }
     });
@@ -970,12 +1018,18 @@ async function processAndInsertRoamTree(apiKey, userText, targetUid, isReplaceRo
     return false;
   }
 
+  if (!roamTargetExists(targetUid)) {
+    alert("The original Roam insertion target is no longer available. Close this window, click the destination page or block, and run RoamPrompt again.");
+    return false;
+  }
+  const resolvedTargetUid = targetUid;
+
   let pageTitle = "Unknown Page";
   try {
-    const blockQuery = window.roamAlphaAPI.q(`[:find ?title :where [?b :block/uid "${targetUid}"] [?b :block/page ?p] [?p :node/title ?title]]`);
+    const blockQuery = window.roamAlphaAPI.q(`[:find ?title :where [?b :block/uid "${resolvedTargetUid}"] [?b :block/page ?p] [?p :node/title ?title]]`);
     if (blockQuery.length > 0) pageTitle = blockQuery[0][0];
     else {
-      const pageQuery = window.roamAlphaAPI.q(`[:find ?title :where [?p :block/uid "${targetUid}"] [?p :node/title ?title]]`);
+      const pageQuery = window.roamAlphaAPI.q(`[:find ?title :where [?p :block/uid "${resolvedTargetUid}"] [?p :node/title ?title]]`);
       if (pageQuery.length > 0) pageTitle = pageQuery[0][0];
     }
   } catch (error) {
@@ -1012,46 +1066,12 @@ ${requestText}`;
     if (!response.ok) throw new Error(describeGeminiError(response, data));
 
     const plan = parseRoamLines(extractGeminiText(data));
-    let currentRootUid = null;
-    let parentMap = {};
-    let rootCount = 0;
-
-    for (let index = 0; index < plan.length; index++) {
-      const item = plan[index];
-
-      if (item.level === 0) {
-        rootCount += 1;
-        if (isReplaceRoot && rootCount === 1) {
-          currentRootUid = targetUid;
-          window.roamAlphaAPI.updateBlock({ block: { uid: targetUid, string: item.text } });
-        } else {
-          currentRootUid = window.roamAlphaAPI.util.generateUID();
-          window.roamAlphaAPI.createBlock({
-            location: { "parent-uid": targetUid, order: "last" },
-            block: { uid: currentRootUid, string: item.text }
-          });
-        }
-        parentMap = { 0: currentRootUid };
-        continue;
-      }
-
-      if (!currentRootUid) throw new Error("Generated note has no root block.");
-      const newUid = window.roamAlphaAPI.util.generateUID();
-      const parentUid = parentMap[item.level - 1] || currentRootUid;
-      window.roamAlphaAPI.createBlock({
-        location: { "parent-uid": parentUid, order: "last" },
-        block: { uid: newUid, string: item.text }
-      });
-      parentMap[item.level] = newUid;
-    }
-
-    if (isReplaceRoot) {
-      const backupUid = window.roamAlphaAPI.util.generateUID();
-      window.roamAlphaAPI.createBlock({
-        location: { "parent-uid": targetUid, order: "last" },
-        block: { uid: backupUid, string: `**🔒 Original Text:** ${userText}` }
-      });
-    }
+    requireExistingInsertionTarget(resolvedTargetUid);
+    await insertPlanTransaction(createRoamWriteAdapter(), resolvedTargetUid, plan, {
+      replaceRoot: isReplaceRoot,
+      originalText: userText,
+      preserveOriginal: isReplaceRoot
+    });
     return true;
   } catch (error) {
     alert(`RoamPrompt could not process this input: ${error.message}`);
@@ -1168,6 +1188,7 @@ ${JSON.stringify(extraction)}`
 }
 
 async function insertTreeTransaction(adapter, targetUid, roots) {
+  if (typeof targetUid !== "string" || !targetUid.trim()) throw new Error("Roam insertion target is missing.");
   const createdUids = [];
   async function createNode(parentUid, node) {
     const uid = adapter.generateUid();
@@ -1193,15 +1214,78 @@ async function insertTreeTransaction(adapter, targetUid, roots) {
   }
 }
 
-async function insertStructuredRoots(targetUid, roots) {
-  return insertTreeTransaction({
+export async function insertPlanTransaction(adapter, targetUid, plan, options = {}) {
+  if (typeof targetUid !== "string" || !targetUid.trim()) throw new Error("Roam insertion target is missing.");
+  const { replaceRoot = false, originalText = "", preserveOriginal = false } = options;
+  const createdUids = [];
+  let rootUpdated = false;
+  let currentRootUid = null;
+  let parentMap = {};
+  let rootCount = 0;
+
+  try {
+    for (const item of plan) {
+      if (item.level === 0) {
+        rootCount += 1;
+        if (replaceRoot && rootCount === 1) {
+          currentRootUid = targetUid;
+          await adapter.updateBlock(targetUid, item.text);
+          rootUpdated = true;
+        } else {
+          currentRootUid = adapter.generateUid();
+          await adapter.createBlock(targetUid, currentRootUid, item.text);
+          createdUids.push(currentRootUid);
+        }
+        parentMap = { 0: currentRootUid };
+        continue;
+      }
+
+      if (!currentRootUid) throw new Error("Generated note has no root block.");
+      const uid = adapter.generateUid();
+      const parentUid = parentMap[item.level - 1] || currentRootUid;
+      await adapter.createBlock(parentUid, uid, item.text);
+      createdUids.push(uid);
+      parentMap[item.level] = uid;
+    }
+
+    if (replaceRoot && preserveOriginal) {
+      const backupUid = adapter.generateUid();
+      await adapter.createBlock(targetUid, backupUid, `**🔒 Original Text:** ${originalText}`);
+      createdUids.push(backupUid);
+    }
+    return { inserted: createdUids.length, createdUids, rootUpdated };
+  } catch (error) {
+    const rollbackErrors = [];
+    for (const uid of [...createdUids].reverse()) {
+      try { await adapter.deleteBlock(uid); }
+      catch (rollbackError) { rollbackErrors.push({ uid, message: rollbackError.message }); }
+    }
+    if (rootUpdated) {
+      try { await adapter.updateBlock(targetUid, originalText); }
+      catch (rollbackError) { rollbackErrors.push({ uid: targetUid, message: rollbackError.message }); }
+    }
+    const detail = rollbackErrors.length
+      ? ` Rollback was incomplete for ${rollbackErrors.length} operation(s).`
+      : " All changes were rolled back.";
+    throw new Error(`Roam insertion failed: ${error.message}.${detail}`);
+  }
+}
+
+function createRoamWriteAdapter() {
+  return {
     generateUid: () => window.roamAlphaAPI.util.generateUID(),
     createBlock: (parentUid, uid, string) => window.roamAlphaAPI.createBlock({
       location: { "parent-uid": parentUid, order: "last" },
       block: { uid, string }
     }),
+    updateBlock: (uid, string) => window.roamAlphaAPI.updateBlock({ block: { uid, string } }),
     deleteBlock: uid => window.roamAlphaAPI.deleteBlock({ block: { uid } })
-  }, targetUid, roots);
+  };
+}
+
+async function insertStructuredRoots(targetUid, roots) {
+  requireExistingInsertionTarget(targetUid);
+  return insertTreeTransaction(createRoamWriteAdapter(), targetUid, roots);
 }
 
 function createCandidateReviewModal(targetUid, result) {
@@ -1273,7 +1357,7 @@ function createCandidateReviewModal(targetUid, result) {
     insert.innerText = "Inserting safely...";
     try {
       const roots = renderVerifiedNotes(result.extraction, result.pipeline, [...selections]);
-      await insertStructuredRoots(targetUid, roots);
+      await insertStructuredRoots(requireExistingInsertionTarget(targetUid), roots);
       overlay.remove();
     } catch (error) {
       alert(error.message);
