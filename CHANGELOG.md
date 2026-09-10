@@ -2,6 +2,28 @@
 
 All notable public changes to RoamPrompt are recorded here.
 
+## 0.4.5 - 2026-09-10
+
+### Fixed
+
+- Resolve a valid insertion target from the focused block, open page, or today's Daily Note before processing begins.
+- Revalidate the target immediately before writing so a stale or invalid parent UID cannot produce a false success.
+- Await every Roam `createBlock` and `updateBlock` operation in the smart-note, Weekly Review, and document workflows.
+- Use transactional insertion and rollback across write paths, including restoration of the original root block after a failed replacement.
+- Surface rejected Roam writes to the user instead of closing the review window as though insertion succeeded.
+
+### Privacy
+
+- Restrict Weekly Review inputs to Quote and open TODO blocks created during the previous seven days.
+- Order eligible blocks newest first and cap transmission at 50 Quote strings and 50 open TODO strings.
+- Show a Weekly Review-specific confirmation that states the categories, date window, and caps before sending content to Gemini.
+- Document exactly which user-authored block strings Weekly Review transmits and confirm that no other graph-wide block strings are included.
+
+### Validation
+
+- Add regression coverage for invalid targets, rejected writes, rollback, bounded Weekly Review selection, and privacy-copy synchronisation.
+- Pass all 46 automated tests and JavaScript syntax checks in the private release source.
+
 ## 0.4.4 - 2026-09-07
 
 ### Added

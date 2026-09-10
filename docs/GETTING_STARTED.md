@@ -1,6 +1,6 @@
 # Getting Started
 
-RoamPrompt v0.4.4 is the approved stable public release. The Roam Depot listing remains pending in PR #1442. Current development acceptance therefore uses a locally loaded extension folder; the Depot steps below apply only after Roam Research approves the listing.
+RoamPrompt v0.4.5 is the current public reliability and privacy update. The Roam Depot listing remains pending in PR #1442. Current development acceptance therefore uses a locally loaded extension folder; the Depot steps below apply only after Roam Research approves the listing.
 
 ## Before installation
 

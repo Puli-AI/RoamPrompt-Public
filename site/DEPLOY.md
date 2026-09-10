@@ -24,3 +24,19 @@ curl -I https://roamprompt.puli-consulting.com/
 ```
 
 No Nginx reload is required for static content changes. Do not deploy unreviewed branches to production.
+
+## Adding published LinkedIn article URLs
+
+The four cards in the `#articles` section intentionally show `LinkedIn article forthcoming` until each post is published. For each published post, replace the card's pending span:
+
+```html
+<span class="article-cta" aria-disabled="true">LinkedIn article forthcoming</span>
+```
+
+with a direct, public LinkedIn URL:
+
+```html
+<a class="article-cta" href="https://www.linkedin.com/posts/...">Read on LinkedIn ↗</a>
+```
+
+Open each URL in a signed-out browser before deployment so the website does not point to an edit, analytics, or private-preview address.

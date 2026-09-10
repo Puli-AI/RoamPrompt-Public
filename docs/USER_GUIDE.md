@@ -104,7 +104,16 @@ RoamPrompt distinguishes:
 
 ## Weekly Review
 
-Use **RoamPrompt: Weekly Review Agent** to organise recent open tasks and captured quotations. Review the result before relying on task migration or thematic summaries.
+Use **RoamPrompt: Weekly Review Agent** to organise recent open tasks and captured quotations. RoamPrompt queries eligible blocks locally, then sends only:
+
+- Quote block strings created during the previous seven days, excluding `[[Wisdom & Quotes]]`; and
+- open TODO block strings created during the previous seven days, excluding `[[DONE]]`.
+
+Eligible items are ordered newest first and capped at 50 strings per category. A separate confirmation describes these limits before transmission to Gemini. Review the result before relying on task migration or thematic summaries.
+
+## Insertion reliability
+
+RoamPrompt resolves an insertion target from the focused block, open page, or today's Daily Note and revalidates it immediately before writing. All block writes are awaited. If a transactional insertion fails, newly created blocks are removed and a replaced root block is restored before the error is reported.
 
 ## Responsible use
 

@@ -10,7 +10,7 @@
 <header><div class="shell nav">
   <a href="https://www.puli-consulting.com" aria-label="Puli Consulting website"><img src="assets/puli-consulting-logo.svg" alt="Puli Consulting"></a>
   <a class="product" href="#top">[[RoamPrompt]]</a>
-  <nav aria-label="Primary navigation"><a href="#workflow">Workflow</a><a href="#showcase">Showcase</a><a href="#api-key">API key</a><a href="#collaborate">Collaborate</a></nav>
+  <nav aria-label="Primary navigation"><a href="#workflow">Workflow</a><a href="#showcase">Showcase</a><a href="#articles">Articles</a><a href="#api-key">API key</a><a href="#collaborate">Collaborate</a></nav>
   <a class="button small light-button" href="https://github.com/Puli-AI/RoamPrompt-Public">GitHub ↗</a>
 </div></header>
 <main id="main">
@@ -18,7 +18,7 @@
   <div><p class="eyebrow pale">A Puli Consulting knowledge tool</p><h1>Read deeply.<br><em>Keep what matters.</em></h1>
   <p class="lede">RoamPrompt brings source-grounded AI directly into Roam Research—helping scholars, writers, and knowledge workers read notes, images, academic papers, books, reports, news articles, and scanned clippings, then turn key ideas into structured notes and reviewable atomic cards without leaving their graph.</p>
   <div class="actions"><a class="button accent" href="https://github.com/Puli-AI/RoamPrompt-Public/blob/main/docs/GETTING_STARTED.md">Get started</a><a class="button light-button" href="#showcase">See it in Roam</a></div>
-  <p class="release"><span></span> v0.4.4 · Stable public release · Roam Depot PR #1442 under review</p></div>
+  <p class="release"><span></span> v0.4.5 · Reliability and privacy update · Roam Depot PR #1442 open</p></div>
   <aside class="zettel"><div class="card-top"><span>QEC / ZETTELKASTEN</span><b>01</b></div><p class="question">How can AI assist reading without pretending to replace judgement?</p>
   <ul><li><b>Evidence</b> retains a source locator.</li><li><b>Interpretation</b> is labelled.</li><li><b>Permanence</b> requires human approval.</li></ul><p class="page-ref">[[Source-grounded knowledge work]]</p></aside>
 </div></section>
@@ -31,7 +31,7 @@
 <div class="shot-grid"><figure><img src="assets/qec-reading-note.webp" alt="A source-grounded QEC literature note inside Roam Research" loading="lazy"><figcaption><span>02</span><div><strong>Source-grounded literature notes</strong><p>Keep source identity, evidence, method, synthesis, limitations, and open questions together.</p></div></figcaption></figure>
 <figure><img src="assets/permanent-notes.webp" alt="Permanent notes in Roam Research with claims, evidence anchors, and suggested concepts" loading="lazy"><figcaption><span>03</span><div><strong>Atomic, with sensible allowance</strong><p>Each Zettel carries one coherent point—even when related observations gain meaning together.</p></div></figcaption></figure></div></div></section>
 
-<section class="section document-showcase" id="documents"><div class="shell"><p class="eyebrow">Document workflows in v0.4.4</p><h2>Move from the original PDF to evidence-grounded notes without leaving Roam.</h2>
+<section class="section document-showcase" id="documents"><div class="shell"><p class="eyebrow">Document workflows</p><h2>Move from the original PDF to evidence-grounded notes without leaving Roam.</h2>
 <article class="case-study"><div class="case-copy"><span class="case-number">01 · ACADEMIC PAPER</span><h3>Read the PDF already embedded in a Daily Note.</h3><p>Run <strong>RoamPrompt: Read PDF on Current Page</strong>. RoamPrompt finds the synced attachment, reads it with Gemini after consent, and presents candidate findings with page and section locators for review.</p><ul><li>Works after an Android upload synchronises to the graph</li><li>Separates empirical findings from interpretation</li><li>Keeps insertion under human control</li></ul></div>
 <div class="case-images"><figure><img src="assets/pdf-current-page.webp" alt="An academic PDF embedded and displayed on a Roam Research Daily Note" loading="lazy"><figcaption>01A · The source PDF remains visible in its Roam context.</figcaption></figure><figure><img src="assets/academic-review.webp" alt="RoamPrompt review window showing academic permanent-note candidates with epistemic status and evidence locators" loading="lazy"><figcaption>01B · Candidate findings retain epistemic status and source locators.</figcaption></figure></div></article>
 <article class="case-study"><div class="case-copy"><span class="case-number">02 · SCANNED NEWS CLIPPING</span><h3>Isolate one article from a noisy historical clipping.</h3><p>Attach an image-only clipping PDF and identify the target headline when useful. RoamPrompt separates the article from advertisements and neighbouring columns, then distinguishes reported events, attributed statements, and contemporary predictions.</p><ul><li>Reads image-only and screenshot PDFs visually</li><li>Records the selected article region</li><li>Prevents predictions from being presented as events</li></ul></div>
@@ -40,6 +40,16 @@
 
 <section class="section"><div class="shell split"><div><p class="eyebrow">Why RoamPrompt</p><h2>AI-assisted reading and atomic knowledge capture, fully integrated with Roam Research.</h2></div>
 <div class="principles"><article><i class="orange"></i><div><h3>Works inside Roam</h3><p>Read, review, and insert structured knowledge without moving the workflow into a separate AI application.</p></div></article><article><i class="red"></i><div><h3>Reads more than papers</h3><p>Process academic papers, books, reports, news articles, and image-only clippings while preserving the correct source type.</p></div></article><article><i class="turquoise"></i><div><h3>Atomic by design</h3><p>Turn key source content into QEC or News Source Notes and reviewable Zettelkasten cards built for reuse and connection.</p></div></article><article><i class="blue"></i><div><h3>Source grounded</h3><p>Keep evidence anchors and epistemic status visible while separating existing graph links from suggested concepts.</p></div></article></div></div></section>
+
+<section class="section articles" id="articles"><div class="shell"><p class="eyebrow pale">The Zettelkasten series</p><h2>Four essays on how notes become a knowledge system.</h2>
+<p class="articles-intro">This forthcoming LinkedIn series traces a line from early slip boxes to AI-assisted reading—while keeping source judgement and authorship with the researcher.</p>
+<div class="article-grid">
+<article><span>01 · ORIGINS</span><h3>Before the search bar</h3><p>Slip boxes grew from centuries of external-memory and retrieval practices—not from a modern productivity trend.</p><span class="article-cta" aria-disabled="true">LinkedIn article forthcoming</span></article>
+<article><span>02 · LUHMANN</span><h3>The scholar with 90,000 notes</h3><p>Niklas Luhmann treated his Zettelkasten as a research partner: a system that could return surprising connections.</p><span class="article-cta" aria-disabled="true">LinkedIn article forthcoming</span></article>
+<article><span>03 · ATOMIC NOTES</span><h3>Why highlights never become ideas</h3><p>An atomic note is a focused, reusable, source-aware proposition—not a sentence merely copied from a page.</p><span class="article-cta" aria-disabled="true">LinkedIn article forthcoming</span></article>
+<article><span>04 · HUMAN JUDGEMENT</span><h3>The AI question that matters</h3><p>AI may accelerate reading, but evidence, uncertainty, and the decision to keep an idea must remain visible and human.</p><span class="article-cta" aria-disabled="true">LinkedIn article forthcoming</span></article>
+</div>
+<p class="article-note">Each card is ready to link directly to its LinkedIn article as soon as the post is published.</p></div></section>
 
 <section class="section api" id="api-key"><div class="shell split"><div><p class="eyebrow pale">BYOK today · broader choice ahead</p><h2>Use your Gemini key now. More LLM options are on the roadmap.</h2>
 <p>RoamPrompt does not supply a shared key. Create your own Gemini API key with Google, then enter it only in the locally loaded RoamPrompt settings until the Roam Depot listing is approved. Puli Consulting does not receive that key through this website.</p>
