@@ -24,6 +24,10 @@ RoamPrompt does not require the entire graph to be uploaded for ordinary operati
 
 Both categories are restricted to blocks created during the previous seven days. Before transmission, results are ordered from newest to oldest and capped at 50 Quote block strings and 50 TODO block strings. RoamPrompt displays a workflow-specific confirmation stating these limits before sending those strings directly to Google Gemini. No other graph-wide block strings are included in the Weekly Review request.
 
+Gemini receives the selected strings so it can group quote material by theme, reproduce open tasks for review and migration, and draft a weekly synthesis. This semantic analysis is not performed locally. The generated report replaces the Roam bullet that was focused when the command started. Original Quote and TODO blocks remain unchanged; RoamPrompt does not automatically move them into `[[Wisdom & Quotes]]`, project, or task pages.
+
+To opt into discovery, users add `[[Quotes]]` to relevant quote blocks and use Roam's open `[[TODO]]` task syntax. Adding `[[Wisdom & Quotes]]` to a quote block is optional and marks it as already curated, causing Weekly Review to exclude it. Dedicated pages do not need to be created in advance merely for the query to work; Roam creates a page when a page link is first used.
+
 ## Gemini API key
 
 Users provide their own Gemini API key. The extension sends requests directly from the browser to the Gemini API.
