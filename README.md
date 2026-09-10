@@ -46,7 +46,17 @@ Attach a supported PDF to produce a source-grounded source note and reviewable p
 
 ### Weekly Review
 
-Organise recent tasks and captured quotations into a structured reflection. Version 0.4.5 restricts this workflow to the previous seven days and caps transmission at 50 Quote block strings and 50 open TODO block strings, with a workflow-specific confirmation before anything is sent to Gemini.
+Use **RoamPrompt: Weekly Review Agent** to group recent quote material, reproduce open tasks for deliberate migration, and draft a short reflection.
+
+Before using it:
+
+- add `[[Quotes]]` to quote blocks that should be considered;
+- use Roam's open `[[TODO]]` task syntax for tasks that should be considered; and
+- optionally add `[[Wisdom & Quotes]]` to already-curated quote blocks so they are excluded.
+
+Dedicated destination pages do not have to be created in advance. Roam creates linked pages when their links are first used. The generated report replaces the bullet that is focused when the command starts; original Quote and TODO blocks remain unchanged and are not automatically moved.
+
+Version 0.4.5 sends at most 50 `[[Quotes]]` block strings and 50 open `[[TODO]]` block strings created during the previous seven days. Gemini receives those strings because thematic grouping and synthesis require the language model to read them. A workflow-specific confirmation explains the purpose, setup, reason for transmission, limits, and destination before anything is sent.
 
 ## Release status
 
