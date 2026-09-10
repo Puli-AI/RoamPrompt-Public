@@ -15,6 +15,15 @@ Depending on the selected workflow, RoamPrompt may send the following informatio
 
 RoamPrompt does not require the entire graph to be uploaded for ordinary operation. When **RoamPrompt: Read PDF on Current Page** is invoked, the extension searches block strings on that page for PDF references, downloads the selected attachment in the user's browser, and sends the PDF directly to Google Gemini after consent. The PDF is not routed through a Puli AI server.
 
+## Weekly Review
+
+**RoamPrompt: Weekly Review Agent** queries the user's graph locally for two categories of user-authored block content:
+
+- blocks referencing `[[Quotes]]`, excluding blocks that also reference `[[Wisdom & Quotes]]`; and
+- open blocks referencing `[[TODO]]`, excluding blocks that also reference `[[DONE]]`.
+
+Both categories are restricted to blocks created during the previous seven days. Before transmission, results are ordered from newest to oldest and capped at 50 Quote block strings and 50 TODO block strings. RoamPrompt displays a workflow-specific confirmation stating these limits before sending those strings directly to Google Gemini. No other graph-wide block strings are included in the Weekly Review request.
+
 ## Gemini API key
 
 Users provide their own Gemini API key. The extension sends requests directly from the browser to the Gemini API.
@@ -29,7 +38,7 @@ Users are responsible for:
 
 ## Puli AI servers
 
-The planned first public release does not require note content, documents, graph context, or Gemini API keys to be sent to a Puli AI server.
+The public extension does not require note content, documents, graph context, or Gemini API keys to be sent to a Puli AI server.
 
 If a future version introduces optional server-backed services, the change will require clear disclosure and an updated privacy notice before activation.
 
