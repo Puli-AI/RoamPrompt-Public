@@ -17,6 +17,11 @@ sudo curl --fail --location --output /var/www/roamprompt/assets/pdf-current-page
 sudo curl --fail --location --output /var/www/roamprompt/assets/academic-review.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/academic-review.webp
 sudo curl --fail --location --output /var/www/roamprompt/assets/news-clipping-input.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/news-clipping-input.webp
 sudo curl --fail --location --output /var/www/roamprompt/assets/news-clipping-review.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/news-clipping-review.webp
+sudo mkdir -p /var/www/roamprompt/assets/social
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/01-origins-slip-box.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/01-origins-slip-box.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/02-niklas-luhmann-portrait.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/02-niklas-luhmann-portrait.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/03-from-source-to-system.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/03-from-source-to-system.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/04-dr-mak-roam-graph-overview.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/04-dr-mak-roam-graph-overview.webp
 
 sudo chown -R www-data:www-data /var/www/roamprompt
 sudo find /var/www/roamprompt -type f -exec chmod 644 {} \;
@@ -27,10 +32,10 @@ No Nginx reload is required for static content changes. Do not deploy unreviewed
 
 ## Adding published LinkedIn article URLs
 
-The four cards in the `#articles` section intentionally show `LinkedIn article forthcoming` until each post is published. For each published post, replace the card's pending span:
+The four cards in the `#articles` section intentionally show `LinkedIn article forthcoming` until each post is published. Each placeholder has a stable `data-link-slot` value from `linkedin-post-1` through `linkedin-post-4`. For each published post, replace the corresponding pending span:
 
 ```html
-<span class="article-cta" aria-disabled="true">LinkedIn article forthcoming</span>
+<span class="article-cta" data-link-slot="linkedin-post-1" aria-disabled="true">LinkedIn article forthcoming</span>
 ```
 
 with a direct, public LinkedIn URL:
