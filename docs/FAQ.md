@@ -8,6 +8,12 @@ Not yet. RoamPrompt v0.4.5 is the current public reliability and privacy update,
 
 No. Ordinary workflows send the selected input and limited contextual information needed for the requested task. Weekly Review locally selects Quote and open TODO block strings from the previous seven days, caps each category at 50 items, and asks for separate confirmation before transmission. See the [Privacy Guide](PRIVACY.md).
 
+## Do I need to create Weekly Review pages first?
+
+No. Mark eligible quote blocks with `[[Quotes]]` and use Roam's open `[[TODO]]` task syntax. Roam creates a linked page when its link is first used. The optional `[[Wisdom & Quotes]]` link marks a quote as already curated and excludes it from later Weekly Reviews.
+
+The report replaces the bullet focused when the command starts. It does not automatically move the original Quote or TODO blocks. Linked references appearing on a page are not the same as block migration.
+
 ## Do I need my own AI account?
 
 The current public release uses a user-provided Google Gemini API key.

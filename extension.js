@@ -678,6 +678,21 @@ export const ROAMPROMPT_COMMAND_LABELS = [
 
 export const WEEKLY_REVIEW_WINDOW_DAYS = 7;
 export const WEEKLY_REVIEW_MAX_ITEMS_PER_TYPE = 50;
+export const WEEKLY_REVIEW_DISCLOSURE = [
+  "RoamPrompt Weekly Review",
+  "",
+  "Purpose: create a reviewable weekly report that groups recent quote material, reproduces open tasks for migration, and drafts a short synthesis.",
+  "",
+  "Setup: add [[Quotes]] to quote blocks and use Roam's open [[TODO]] task syntax. [[Wisdom & Quotes]] is an optional marker for quotes you have already curated; those blocks are excluded.",
+  "",
+  "Why Gemini receives the entries: semantic grouping and synthesis require the language model to read the selected block strings. This analysis is not performed locally.",
+  "",
+  "Data sent: up to 50 newest [[Quotes]] block strings and 50 newest open [[TODO]] block strings created during the past 7 days, using your Gemini API key.",
+  "",
+  "Destination: the generated report replaces the Roam bullet currently in focus. Original Quote and TODO blocks remain where they are; RoamPrompt does not automatically move them to other pages.",
+  "",
+  "Continue?"
+].join("\n");
 
 export function selectRecentWeeklyItems(rows, since, limit = WEEKLY_REVIEW_MAX_ITEMS_PER_TYPE) {
   return (rows || [])
@@ -907,7 +922,7 @@ export default {
         const focusedBlock = window.roamAlphaAPI.ui.getFocusedBlock();
         if (focusedBlock == null) { alert("Please click inside a bullet point on your Daily Notes page to run the Weekly Review."); return; }
         const blockUid = focusedBlock["block-uid"];
-        if (!confirm("Weekly Review will send directly to Google Gemini up to 50 [[Quotes]] block strings and 50 open [[TODO]] block strings created during the past 7 days, using your API key. Continue?")) return;
+        if (!confirm(WEEKLY_REVIEW_DISCLOSURE)) return;
 
         const originalText = getBlockString(blockUid);
         try {
@@ -951,7 +966,7 @@ You are a Weekly Review Agent. Analyze the user's data from the past 7 days and 
 Format the output EXACTLY like this using tabs for indentation:
 
 📅 Weekly Reflection & Migration Report
-	💎 CURATED MASTERPIECES (Ready to drag into [[Wisdom & Quotes]])
+	💎 CURATED MASTERPIECES (Review, then optionally move into [[Wisdom & Quotes]])
 		[Group unprocessed quotes under appropriate thematic headers: Philosophy & Governance, Execution & Strategy, Cognition & Learning, or AI & Systems]
 		💡 Quote: [[Exact quoted expression in its original language and script]]
 			Verbatim:: "[The exact verbatim quote text]"
@@ -960,7 +975,7 @@ Format the output EXACTLY like this using tabs for indentation:
 			Tags:: #Quotes [Relevant Tags]
 			Related Concepts:: [Suggest 2 active project links or concepts based on the quote]
 			Takeaway:: [1-sentence synthesis of why this matters]
-	🎯 Tasks to Migrate
+	🎯 Tasks to Review and Migrate
 		[List all open TODOs provided here exactly as written. Group them logically if possible.]
 	🧠 Weekly Synthesis
 		[Write a 2-paragraph executive summary of the themes the user focused on this week based on their quotes and tasks, written directly to the user as an objective coach.]

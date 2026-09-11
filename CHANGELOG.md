@@ -17,12 +17,13 @@ All notable public changes to RoamPrompt are recorded here.
 - Restrict Weekly Review inputs to Quote and open TODO blocks created during the previous seven days.
 - Order eligible blocks newest first and cap transmission at 50 Quote strings and 50 open TODO strings.
 - Show a Weekly Review-specific confirmation that states the categories, date window, and caps before sending content to Gemini.
+- Explain the workflow purpose, required Roam markers, reason for Gemini transmission, output destination, and non-movement of source blocks before consent.
 - Document exactly which user-authored block strings Weekly Review transmits and confirm that no other graph-wide block strings are included.
 
 ### Validation
 
 - Add regression coverage for invalid targets, rejected writes, rollback, bounded Weekly Review selection, and privacy-copy synchronisation.
-- Pass all 46 automated tests and JavaScript syntax checks in the private release source.
+- Pass all 47 automated tests and JavaScript syntax checks in the private release source.
 
 ## 0.4.4 - 2026-09-07
 
