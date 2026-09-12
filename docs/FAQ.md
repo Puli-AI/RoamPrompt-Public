@@ -2,7 +2,7 @@
 
 ## Is RoamPrompt available in Roam Depot?
 
-Not yet. RoamPrompt v0.4.5 is the current public reliability and privacy update, and Roam Depot PR #1442 remains open. Current development testing uses a locally loaded extension folder.
+Yes. RoamPrompt v0.4.5 is available in Roam Depot. Open **Settings → Roam Depot**, search for **RoamPrompt**, and select **Install**.
 
 ## Does RoamPrompt upload my entire graph?
 

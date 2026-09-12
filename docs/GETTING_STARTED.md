@@ -1,6 +1,6 @@
 # Getting Started
 
-RoamPrompt v0.4.5 is the current public reliability and privacy update. The Roam Depot listing remains pending in PR #1442. Current development acceptance therefore uses a locally loaded extension folder; the Depot steps below apply only after Roam Research approves the listing.
+RoamPrompt v0.4.5 is the current public reliability and privacy update and is available in Roam Depot.
 
 ## Before installation
 
@@ -15,13 +15,11 @@ Read the [Privacy Guide](PRIVACY.md) before using the extension with personal, c
 
 ## Roam Depot installation
 
-When the Roam Depot listing is approved:
-
 1. Open **Settings** in Roam Research.
 2. Select **Roam Depot**.
 3. Search for **RoamPrompt**.
 4. Review the description, permissions, privacy information, and release notes.
-5. Install the extension.
+5. Select **Install**.
 6. Open the RoamPrompt settings panel.
 7. Enter your own Gemini API key.
 8. Start with a non-critical test graph.

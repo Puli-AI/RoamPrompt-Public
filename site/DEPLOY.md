@@ -22,6 +22,10 @@ sudo curl --fail --location --output /var/www/roamprompt/assets/social/01-origin
 sudo curl --fail --location --output /var/www/roamprompt/assets/social/02-niklas-luhmann-portrait.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/02-niklas-luhmann-portrait.webp
 sudo curl --fail --location --output /var/www/roamprompt/assets/social/03-from-source-to-system.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/03-from-source-to-system.webp
 sudo curl --fail --location --output /var/www/roamprompt/assets/social/04-dr-mak-roam-graph-overview.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/04-dr-mak-roam-graph-overview.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/01-before-the-search-bar-linkedin.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/01-before-the-search-bar-linkedin.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/02-scholar-90000-notes-linkedin.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/02-scholar-90000-notes-linkedin.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/03-highlights-never-ideas-linkedin.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/03-highlights-never-ideas-linkedin.webp
+sudo curl --fail --location --output /var/www/roamprompt/assets/social/04-lines-to-3d-web-linkedin.webp https://raw.githubusercontent.com/Puli-AI/RoamPrompt-Public/main/site/assets/social/04-lines-to-3d-web-linkedin.webp
 
 sudo chown -R www-data:www-data /var/www/roamprompt
 sudo find /var/www/roamprompt -type f -exec chmod 644 {} \;
